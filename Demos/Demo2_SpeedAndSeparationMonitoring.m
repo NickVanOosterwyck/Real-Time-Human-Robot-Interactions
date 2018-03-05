@@ -15,7 +15,7 @@ cam.connect();
 
 %% Set up
 %-- move camera
-cam.moveToCameraLocation([1.7 1.7 1 90 -45 0]); % north-west
+cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-west
 
 %-- set positions
 Home = rob.homeJointTargetPositions;
