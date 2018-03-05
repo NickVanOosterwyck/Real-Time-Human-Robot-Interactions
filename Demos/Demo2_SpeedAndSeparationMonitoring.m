@@ -29,7 +29,7 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
 rStop = 2.65/2;
-rSlow = 2.5;
+rSlow = 2;
 
 %% Check pointclouds
 % Show pointcloud calibration
@@ -50,8 +50,8 @@ end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-iterations = 5;
-speedlimit = 0.5;
+iterations = 3;
+speedlimit = 0.7;
 
 for it = 1:iterations
     i = 1;
@@ -59,15 +59,15 @@ for it = 1:iterations
         while ~rob.checkPoseReached(Path(i,:))
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
-            if ~isempty(indices) && min(dist)<rStop
+            if (~isempty(indices) && min(dist)<rStop)
                 [~] = rob.getJointPositions();
                 rob.stopRobot();
             elseif ~isempty(indices) && min(dist)>rStop && min(dist)<rSlow
-                Speedfactor = (min(dist)-rStop)/(rSlow-rStop)*speedlimit;
+                Speedfactor = min(min((min(dist)-rStop)/(rSlow-rStop),1),speedlimit);
                 rob.setMaxJointSpeedFactor(Speedfactor);
                 rob.moveToJointTargetPositions(Path(i,:));
             else
-                rob.setMaxJointSpeedFactor(1*speedlimit);
+                rob.setMaxJointSpeedFactor(speedlimit);
                 rob.moveToJointTargetPositions(Path(i,:));
             end
         end
