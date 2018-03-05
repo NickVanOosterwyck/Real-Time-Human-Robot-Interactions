@@ -36,9 +36,8 @@ classdef kinectcore < handle
         end
         function showPointCloud(obj,ptCloud)
             figure('Name','PointCloud');
-            s = pcshow(ptCloud);
+            pcshow(ptCloud);
             axis equal
-            s.CameraPosition = obj.CameraLocation(1:3);
             title('PointCloud')
             xlabel('X [m]');
             ylabel('Y [m]');

@@ -17,10 +17,18 @@ cam.showPointCloud(ptCloudRaw);
 cam.showPointCloud(ptCloudDesampled);
 
 %% Get filtered pointcloud
-tic
 [ptCloudFiltered] = cam.getFilteredPointCloud();
-toc
 cam.showPointCloud(ptCloudFiltered);
+
+%% Check pointclouds
+% Show pointcloud calibration
+[ptCloudRaw] = cam.getRawPointCloud();
+cam.showPointCloudCalibration(ptCloudRaw);
+
+% Show pointcloud comparison
+[ptCloudDesampled] = cam.getDesampledPointCloud();
+[ptCloudFiltered] = cam.getFilteredPointCloud();
+cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
 %% Move camera
 cam.moveToCameraLocation([0 2 1 90 0 0]);       % north
