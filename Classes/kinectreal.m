@@ -1,23 +1,18 @@
-classdef kinectvrep < kinectcore & VREP_Projector
-    %kinectvrep Summary of this class goes here
+classdef kinectreal < kinectcore & Kinect
+    %kinectreal Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties (SetAccess = protected)    
+    properties (SetAccess = protected)
     end
     
     methods
-        function obj = kinectvrep()
-        end % conctructor
-
+        function obj = kinectreal()
+        end % constructor
+        
         function connect(obj)
-            obj.Open('Kinect_sensor');clc;
-            if (obj.clientID>-1)
-                disp('Connected to remote API server! (Kinect)');
-            else
-                error('Problem with connection!!!\n%s','Make sure the simulation in VREP is running and try again.')
-            end
+            obj.Open();
             load camera_parameters.mat Ip;
-            obj.setParams(copy(Ip));
+            %obj.setParams(copy(Ip));
             obj.moveHome();
         end
         function disconnect (obj)
@@ -25,8 +20,6 @@ classdef kinectvrep < kinectcore & VREP_Projector
         end
         function moveToCameraLocation(obj,Location)
             obj.CameraLocation = Location;
-            [~]=obj.simObj.simxSetObjectOrientation(obj.clientID,obj.handle,-1,obj.CameraLocation(4:6)./180.*pi,obj.simObj.simx_opmode_oneshot);
-            [~]=obj.simObj.simxSetObjectPosition(obj.clientID,obj.handle,-1,obj.CameraLocation(1:3),obj.simObj.simx_opmode_oneshot);
         end
         function moveHome(obj)
             obj.moveToCameraLocation(obj.homeCameraLocation);
@@ -51,7 +44,5 @@ classdef kinectvrep < kinectcore & VREP_Projector
             ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
             ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
         end
-        
     end
 end
-

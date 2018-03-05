@@ -3,14 +3,18 @@ classdef kinectcore < handle
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
-        CameraLocation      % location of camera [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
+        CameraLocation      % Location of camera [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
         homeCameraLocation  % Home location of camera
+        detectionVol        % Dimensions of volume where object are detected
+        worktableVol        % Dimensions of worktable 
     end
     
     methods
         function obj = kinectcore()
             obj.homeCameraLocation = [0.67 2 1.08 90 0 0];
-            obj.CameraLocation = zeros(1,6);   
+            obj.CameraLocation = zeros(1,6);
+            obj.detectionVol = [-2.5 2.5 -2.5 1.99 0 2];
+            obj.worktableVol = [-0.08 1.42 -0.7 0.7 0 2.32];
         end % constructor
         function set.CameraLocation(obj,Location)
             if length(Location)==6 && isnumeric(Location) ...
