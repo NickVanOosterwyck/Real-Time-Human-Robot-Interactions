@@ -47,6 +47,8 @@ classdef kinectreal < kinectcore & Kinect
         function [RGB] = getRGB(obj)
             RGB = obj.GetFrame(TofFrameType.RGB_IMAGE);
         end
+        
+        
     end
 end
 
