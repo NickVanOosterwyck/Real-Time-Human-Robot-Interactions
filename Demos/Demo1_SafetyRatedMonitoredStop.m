@@ -28,7 +28,7 @@ PlaceApp = [-25 -113.8520 -93.5075 -152.6405 -25 0];
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 1.5;
+rStop = 2.65/2;
 
 %% Check pointclouds
 % Show pointcloud calibration
