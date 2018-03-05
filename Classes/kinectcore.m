@@ -9,7 +9,7 @@ classdef kinectcore < handle
     
     methods
         function obj = kinectcore()
-            obj.homeCameraLocation = [0 2.5 1 90 0 0];
+            obj.homeCameraLocation = [0.67 2 1.08 90 0 0];
             obj.CameraLocation = zeros(1,6);   
         end % constructor
         function set.CameraLocation(obj,Location)
@@ -57,6 +57,24 @@ classdef kinectcore < handle
             [ptCloud,~] = removeInvalidPoints(ptCloud);
             ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
             ptCloud = pcdenoise(ptCloud);
+        end
+        function [ptCloud] = selectBox(ptCloud,dim)
+            XYZ = ptCloud.Location;
+            box = [dim(1)-off dim(2)+off dim(3)-off dim(4)+off dim(5)-off dim(6)+off];
+            k=1;
+            indices = -1;
+            for i = 1:length(XYZ)
+                if XYZ(i,1)>box(1) &&  XYZ(i,1)<box(2) &&  XYZ(i,2)>box(3) ...
+                        &&  XYZ(i,2)<box(4) &&  XYZ(i,3)>box(5) &&  XYZ(i,3)<box(6)
+                    indices(k) = i;
+                    k = k+1;
+                end
+            end
+            if indices(1)>-1
+                ptCloud = select(ptCloud,indices);
+            else
+                ptCloud = pointCloud([NaN NaN NaN]);
+            end
         end
         function [ptCloud] = removeFloor(ptCloud,off)
             XYZ = ptCloud.Location;
