@@ -8,8 +8,16 @@ clear; close all; clc
 cam=kinectreal();
 cam.connect();
 
-%% Get filtered pointcloud
-[ptCloudFiltered] = cam.getFilteredPointCloud();
-cam.showPointCloud(ptCloudFiltered);
-
 %% Get RGB images
+cd Data\CalibrationImages
+for i= 1:20
+    disp(['Image ',num2str(i)]);
+    pause(2)
+    RGB = cam.getRGB();
+    imwrite(RGB,['Image',num2str(i),'.png'])
+end
+cd ../
+cd ../
+
+%% Launch Calibrator
+cameraCalibrator
