@@ -179,16 +179,9 @@ classdef kinectcore < handle
         end
         function [I] = cameraParameters2IntrinsicMatrix(cameraParams)
             I = IntrinsicMatrix;
-            I.fx = cameraParams.IntrinsicMatrix(1,1);
-            I.fy = cameraParams.IntrinsicMatrix(2,2);
-            I.cx = cameraParams.IntrinsicMatrix(3,1);
-            I.cy = cameraParams.IntrinsicMatrix(3,2);
-            I.s = cameraParams.IntrinsicMatrix(2,1);
+            I.MatlabIntrinsics = cameraParams.IntrinsicMatrix;
             I.width = cameraParams.ImageSize(1);
             I.height = cameraParams.ImageSize(2);
-            I.MatlabIntrinsics = cameraParams.IntrinsicMatrix;
-            I.OpenCVIntrinsics = I.MatlabIntrinsics.';
-            I.PerspectiveAngle = 0;
             
         end
 

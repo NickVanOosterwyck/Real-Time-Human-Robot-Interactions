@@ -16,8 +16,9 @@ classdef kinectvrep < kinectcore & VREP_Projector
             else
                 error('Problem with connection!!!\n%s','Make sure the simulation in VREP is running and try again.')
             end
-            load camera_parameters.mat Ip;
-            obj.setParams(copy(Ip));
+            load cameraParams.mat cameraParams;
+            I = obj.cameraParameters2IntrinsicMatrix(cameraParams);
+            obj.setParams(copy(I));
             obj.moveHome();
         end
         function disconnect (obj)
