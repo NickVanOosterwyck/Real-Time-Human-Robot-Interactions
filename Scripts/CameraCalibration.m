@@ -16,8 +16,7 @@ for i= 1:20
     RGB = cam.getRGB();
     imwrite(RGB,['Image',num2str(i),'.png'])
 end
-cd ../
-cd ../
+cd ../../
 
 %% Launch Calibrator
 cameraCalibrator
