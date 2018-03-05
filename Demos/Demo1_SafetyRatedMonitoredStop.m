@@ -37,24 +37,24 @@ rob.setMaxJointSpeedFactor(0.1);
 rob.goHome();
 while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
+disp('Robot is ready in home pose.')
 
 %% Cycle
-rob.setMaxJointSpeedFactor(0.3);
+rob.setMaxJointSpeedFactor(0.5);
 iterations = 3;
 
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         while ~rob.checkPoseReached(Path(i,:))
-            tic
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
             if ~isempty(indices) && min(dist)<1.5
+                [~] = rob.getJointPositions();
                 rob.stopRobot();
             else
                 rob.moveToJointTargetPositions(Path(i,:));
             end
-            toc
         end
     end
 end
