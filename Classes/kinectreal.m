@@ -44,5 +44,11 @@ classdef kinectreal < kinectcore & Kinect
             ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
             ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
         end
+        function [RGB] = getRGB(obj)
+            RGB = obj.GetFrame(TofFrameType.RGB_IMAGE);
+        end
     end
 end
+
+
+

@@ -8,8 +8,8 @@ clear; close all; clc
 cam=kinectreal();
 cam.connect();
 
-%% Get ptCloud
-%XYZ = cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
-%ptCloud = pointCloud(XYZ);
-ptCloud = cam.GetFrame(TofFrameType.POINTCLOUD_COLOR);
-pcshow(ptCloud);
+%% Get filtered pointcloud
+[ptCloudFiltered] = cam.getFilteredPointCloud();
+cam.showPointCloud(ptCloudFiltered);
+
+%% Get RGB images
