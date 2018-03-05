@@ -35,6 +35,11 @@ rStop = 1.5;
 [ptCloudFiltered] = cam.getFilteredPointCloud();
 cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
+%% test
+[ptCloudDesampled] = cam.getDesampledPointCloud();
+s1 = subplot(1,2,1);
+pcshow(ptCloudDesampled)
+
 %% Go home
 % limit speed
 rob.setMaxJointSpeedFactor(0.1);

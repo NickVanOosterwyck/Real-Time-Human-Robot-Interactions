@@ -54,6 +54,8 @@ classdef kinectcore < handle
             s1=subplot(1,2,1);
             pcshow(ptCloudDesampled)
             axis equal
+            s1.CameraPosition = obj.CameraLocation(1:3);
+            s1.CameraTarget = [0 0 0];
             title('PointCloud Desampled')
             xlabel('X [m]');
             ylabel('Y [m]');
@@ -67,6 +69,11 @@ classdef kinectcore < handle
             s2=subplot(1,2,2);
             pcshow(ptCloudFiltered)
             axis equal
+            s2.XLim = s1.XLim;
+            s2.YLim = s1.YLim;
+            s2.ZLim = s1.ZLim;
+            s2.CameraPosition = s1.CameraPosition;
+            s2.CameraTarget = s1.CameraTarget;
             title('PointCloud Filtered')
             xlabel('X [m]');
             ylabel('Y [m]');
