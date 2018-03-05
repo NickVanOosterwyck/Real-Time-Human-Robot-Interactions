@@ -49,8 +49,9 @@ classdef kinectvrep < kinectcore & VREP_Projector
             ptCloud = obj.desamplePointCloud(ptCloud);
             ptCloud = obj.removeClippingPlane(ptCloud,5);
             ptCloud = obj.transformPointCloud(ptCloud);
+            ptCloud = obj.selectBox(ptCloud,[-2.5 2.5 -1.99 2.5 0 3],0.1); % select detection area
             ptCloud = obj.removeBox(ptCloud,[-0.08 1.42 -0.7 0.7 0 2.32],0.1); %remove worktable
-            ptCloud = obj.removeFloor(ptCloud,0.1);
+            %ptCloud = obj.removeFloor(ptCloud,0.1);
         end
         
     end
