@@ -49,6 +49,35 @@ classdef kinectcore < handle
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             hold off
         end
+        function showPointCloudComparison(obj,ptCloudDesampled,ptCloudFiltered)
+            figure('Name','PointCloud Comparison');
+            s1=subplot(1,2,1);
+            pcshow(ptCloudDesampled)
+            axis equal
+            title('PointCloud Desampled')
+            xlabel('X [m]');
+            ylabel('Y [m]');
+            zlabel('Z [m]');
+            hold on
+            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
+            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
+            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
+            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
+            hold off
+            s2=subplot(1,2,2);
+            pcshow(ptCloudFiltered)
+            axis equal
+            title('PointCloud Filtered')
+            xlabel('X [m]');
+            ylabel('Y [m]');
+            zlabel('Z [m]');
+            hold on
+            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
+            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
+            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
+            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
+            hold off
+        end
 
     end
     

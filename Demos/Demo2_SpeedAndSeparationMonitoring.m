@@ -31,9 +31,10 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 rStop = 1.35;
 rSlow = 2.5;
 
-% Show desampled pointcloud
+% Show pointcloud comparison
 [ptCloudDesampled] = cam.getDesampledPointCloud();
-cam.showPointCloud(ptCloudDesampled);
+[ptCloudFiltered] = cam.getFilteredPointCloud();
+cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
 %% Go home
 % limit speed

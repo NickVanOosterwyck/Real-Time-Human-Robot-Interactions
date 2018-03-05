@@ -30,9 +30,10 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 %-- set safety distances
 rStop = 1.5;
 
-% Show desampled pointcloud
+% Show pointcloud comparison
 [ptCloudDesampled] = cam.getDesampledPointCloud();
-cam.showPointCloud(ptCloudDesampled);
+[ptCloudFiltered] = cam.getFilteredPointCloud();
+cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
 %% Go home
 % limit speed
