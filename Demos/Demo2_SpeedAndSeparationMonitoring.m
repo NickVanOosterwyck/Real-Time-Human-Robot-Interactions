@@ -31,6 +31,11 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 rStop = 1.35;
 rSlow = 2.5;
 
+%% Check pointclouds
+% Show pointcloud calibration
+[ptCloudRaw] = cam.getRawPointCloud();
+cam.showPointCloudCalibration(ptCloudRaw);
+
 % Show pointcloud comparison
 [ptCloudDesampled] = cam.getDesampledPointCloud();
 [ptCloudFiltered] = cam.getFilteredPointCloud();
@@ -68,5 +73,6 @@ for it = 1:iterations
         end
     end
 end
+
 %% Disconnect
 rob.disconnect();

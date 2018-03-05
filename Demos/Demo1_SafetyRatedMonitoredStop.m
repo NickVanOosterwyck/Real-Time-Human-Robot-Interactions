@@ -30,6 +30,11 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 %-- set safety distances
 rStop = 1.5;
 
+%% Check pointclouds
+% Show pointcloud calibration
+[ptCloudRaw] = cam.getRawPointCloud();
+cam.showPointCloudCalibration(ptCloudRaw);
+
 % Show pointcloud comparison
 [ptCloudDesampled] = cam.getDesampledPointCloud();
 [ptCloudFiltered] = cam.getFilteredPointCloud();

@@ -36,8 +36,9 @@ classdef kinectcore < handle
         end
         function showPointCloud(obj,ptCloud)
             figure('Name','PointCloud');
-            pcshow(ptCloud)
+            s = pcshow(ptCloud);
             axis equal
+            s.CameraPosition = obj.CameraLocation(1:3);
             title('PointCloud')
             xlabel('X [m]');
             ylabel('Y [m]');
@@ -83,6 +84,22 @@ classdef kinectcore < handle
             quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
             quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
+            hold off
+        end
+        function showPointCloudCalibration(obj,ptCloud)
+            obj.showPointCloud(ptCloud);
+            title('PointCloud Calibration')
+            % add robot base cylinder
+            hold on
+            [x1,y1,z1] = cylinder(0.17/2,10);
+            z1(1, :) = 0.835;
+            z1(2, :) = 0.835+0.205;
+            surf(x1,y1,z1,'FaceAlpha',0.5,'FaceColor','r')
+            % add table top
+            x2 = [-0.08 -0.08 -0.08 -0.08 -0.08;1.42 1.42 1.42 1.42 1.42];
+            y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
+            z2 = [0.835 0.795 0.795 0.835 0.835; 0.835 0.795 0.795 0.835 0.835];
+            surf(x2,y2,z2,'FaceAlpha',0.5,'FaceColor','r')            
             hold off
         end
 
