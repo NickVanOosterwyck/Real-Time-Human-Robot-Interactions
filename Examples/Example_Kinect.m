@@ -38,5 +38,3 @@ cam.moveToCameraLocation([-2 0 1 90 0 0]);      % west
 
 cam.moveToCameraLocation([-1.5 1.5 1 90 45 0]); % north-west
 
-%% Disconnect
-cam.disconnect();
