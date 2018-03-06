@@ -42,31 +42,30 @@ cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
 %% Go home
 % limit speed
-rob.setMaxJointSpeedFactor(0.1);
-rob.goHome();
+rob.goHome(0.1);
 while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-rob.setMaxJointSpeedFactor(0.6);
+MaxSpeedFactor = 0.6;
 iterations = 3;
 
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         while ~rob.checkPoseReached(Path(i,:))
+            tic
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
+            toc
             if ~isempty(indices) && min(dist)<rStop
                 [~] = rob.getJointPositions();
                 rob.stopRobot();
             else
-                rob.moveToJointTargetPositions(Path(i,:));
+                rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
             end
         end
     end
 end
-%% Disconnect
-rob.disconnect();
-cam.disconnect();
+

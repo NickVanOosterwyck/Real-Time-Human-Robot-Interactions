@@ -43,15 +43,14 @@ cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
 
 %% Go home
 % limit speed
-rob.setMaxJointSpeedFactor(0.1);
-rob.goHome();
+rob.goHome(0.1);
 while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
+MaxSpeedFactor = 0.6;
 iterations = 3;
-speedlimit = 0.6;
 
 for it = 1:iterations
     i = 1;
@@ -65,16 +64,12 @@ for it = 1:iterations
                 [~] = rob.getJointPositions();
                 rob.stopRobot();
             elseif ~isempty(indices) && min(dist)>rStop && min(dist)<rSlow
-                Speedfactor = min((min(dist)-rStop)/(rSlow-rStop),speedlimit);
-                rob.setMaxJointSpeedFactor(Speedfactor);
-                rob.moveToJointTargetPositions(Path(i,:));
+                Speedfactor = min((min(dist)-rStop)/(rSlow-rStop),MaxSpeedFactor);
+                rob.moveToJointTargetPositions(Path(i,:),Speedfactor);
             else
-                rob.setMaxJointSpeedFactor(speedlimit);
-                rob.moveToJointTargetPositions(Path(i,:));
+                rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
             end
         end
     end
 end
 
-%% Disconnect
-rob.disconnect();

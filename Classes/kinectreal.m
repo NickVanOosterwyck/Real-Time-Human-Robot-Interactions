@@ -1,8 +1,9 @@
-classdef kinectreal < handle & Kinect
+classdef kinectreal < handle
     %kinectreal Summary of this class goes here
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
+
     end
     
     methods
