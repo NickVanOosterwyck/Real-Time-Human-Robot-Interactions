@@ -5,7 +5,7 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-rob=ur10vrep();     %rob=ur10real();  % choose ur10
+rob=ur10core('vrep');   %rob=ur10core('real');   % choose ur10
 rob.connect();
 
 %% Go home
@@ -23,30 +23,30 @@ rob.TCPTargetPositions
 %% Follow path
 rob.setMaxJointSpeedFactor(0.6);
 rob.goHome();
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
 rob.moveToJointTargetPositions([45 -113.8520 -93.5075 -152.6405 -135 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([45 -113.8520 -93.5075 -152.6405 -135 0])
 end
 rob.moveToJointTargetPositions([45 -125 -100 -135 -135 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([45 -125 -100 -135 -135 0])
 end
 pause(0.5)
 rob.moveToJointTargetPositions([45 -113.8520 -93.5075 -152.6405 -135 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([45 -113.8520 -93.5075 -152.6405 -135 0])
 end
 rob.moveToJointTargetPositions([-25 -113.8520 -93.5075 -152.6405 -25 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([-25 -113.8520 -93.5075 -152.6405 -25 0])
 end
 rob.moveToJointTargetPositions([-25 -125 -100 -135 -25 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([-25 -125 -100 -135 -25 0])
 end
 pause(0.5)
 rob.moveToJointTargetPositions([-25 -113.8520 -93.5075 -152.6405 -25 0]);
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached([-25 -113.8520 -93.5075 -152.6405 -25 0])
 end
 rob.goHome();
-while ~rob.checkPoseReached()
+while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
 
 %% Disconnect

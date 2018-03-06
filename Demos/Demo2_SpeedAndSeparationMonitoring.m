@@ -6,16 +6,16 @@ clear; close all; clc
 
 %% Connect
 %-- choose UR10
-rob=ur10vrep();     %rob=ur10real();
+rob=ur10core('vrep');   %rob=ur10core('real');
 rob.connect();
 
 %-- choose kinect
-cam=kinectvrep();   %cam=kinectreal();
+cam=kinectcore('vrep');     %cam=kinectcore('real');
 cam.connect();
 
 %% Set up
 %-- move camera
-cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-west
+cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
 
 %-- set positions
 Home = rob.homeJointTargetPositions;
@@ -51,19 +51,21 @@ disp('Robot is ready in home pose.')
 
 %% Cycle
 iterations = 3;
-speedlimit = 0.7;
+speedlimit = 0.6;
 
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         while ~rob.checkPoseReached(Path(i,:))
+            tic
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
+            toc
             if (~isempty(indices) && min(dist)<rStop)
                 [~] = rob.getJointPositions();
                 rob.stopRobot();
             elseif ~isempty(indices) && min(dist)>rStop && min(dist)<rSlow
-                Speedfactor = min(min((min(dist)-rStop)/(rSlow-rStop),1),speedlimit);
+                Speedfactor = min((min(dist)-rStop)/(rSlow-rStop),speedlimit);
                 rob.setMaxJointSpeedFactor(Speedfactor);
                 rob.moveToJointTargetPositions(Path(i,:));
             else

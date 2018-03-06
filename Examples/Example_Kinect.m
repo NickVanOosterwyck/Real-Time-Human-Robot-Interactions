@@ -5,7 +5,7 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-cam=kinectvrep();   %cam=kinectreal();  % choose kinect
+cam=kinectcore('vrep');     %cam=kinectcore('real');    % choose kinect
 cam.connect();
 
 %% Get raw pointcloud

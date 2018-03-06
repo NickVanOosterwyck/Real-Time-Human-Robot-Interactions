@@ -3,6 +3,7 @@ classdef ur10core < handle
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
+        rob                         % selected ur10 class
         DH                          % Denavit-Hartenberg parameters
         TCPoffset                   % Distance between TCP and robot end
         homeJointTargetPositions;   % Joint positions of home pose in degree
@@ -12,7 +13,12 @@ classdef ur10core < handle
     end
     
     methods
-        function obj = ur10core()
+        function obj = ur10core(rob_selected)
+            if rob_selected == 'vrep'
+                obj.rob = ur10vrep();
+            elseif rob_selected == 'real'
+                obj.rob = ur10real();
+            end
             obj.homeJointTargetPositions = [0 -90 -90 -180 -90 0];
             obj.TCPTargetPositions = zeros(1,6);
             obj.JointTargetPositions = zeros(1,6);
@@ -53,6 +59,44 @@ classdef ur10core < handle
             end
         end
         
+        function connect(obj)
+            obj.rob.connectDif();
+            [~] = obj.getJointPositions();
+            pause(0.1)
+            startPositions = obj.getJointPositions(); %2nd call because of streaming operation mode in VREP
+            obj.moveToJointTargetPositions(startPositions);
+        end
+        function disconnect(obj)
+            obj.rob.disconnectDif();
+        end
+        function [JointPositions] = getJointPositions(obj)
+            JointPositions_rad=obj.rob.getJointPositionsDif();
+            JointPositions=round(JointPositions_rad/pi*180,2);
+        end
+        function moveToJointTargetPositions(obj,JointTargetPositions)
+            obj.JointTargetPositions=JointTargetPositions;
+            obj.TCPTargetPositions=obj.ForwKin(JointTargetPositions);
+            obj.rob.moveToJointTargetPositionsDif(JointTargetPositions);
+        end
+        function setMaxJointSpeedFactor(obj,MaxJointSpeedFactor)
+            obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
+            obj.rob.setMaxJointSpeedFactorDif(MaxJointSpeedFactor)
+            obj.moveToJointTargetPositions(obj.JointTargetPositions); % maybe not necessary
+        end
+        function goHome(obj)
+            obj.moveToJointTargetPositions(obj.homeJointTargetPositions);
+        end
+        function stopRobot(obj)
+            obj.moveToJointTargetPositions(obj.getJointPositions());
+        end
+        function [flag] = checkPoseReached(obj,JointTargetPositions)
+            Positions = obj.getJointPositions();
+            if max(abs(Positions-JointTargetPositions))< 0.5
+                flag=1;
+            else
+                flag=0;
+            end
+        end
         function TCP = ForwKin(obj,JointPositions)
             ang = [JointPositions 0];
             d = obj.DH.JointOffset;

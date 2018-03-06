@@ -6,16 +6,16 @@ clear; close all; clc
 
 %% Connect
 %-- choose UR10
-rob=ur10vrep();     %rob=ur10real();
+rob=ur10core('vrep');   %rob=ur10core('real');
 rob.connect();
 
 %-- choose kinect
-cam=kinectvrep();   %cam=kinectreal();
+cam=kinectcore('vrep');     %cam=kinectcore('real');
 cam.connect();
 
 %% Set up
 %-- move camera
-cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-west
+cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
 
 %-- set positions
 Home = rob.homeJointTargetPositions;
@@ -49,7 +49,7 @@ end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-rob.setMaxJointSpeedFactor(0.5);
+rob.setMaxJointSpeedFactor(0.6);
 iterations = 3;
 
 for it = 1:iterations
@@ -69,3 +69,4 @@ for it = 1:iterations
 end
 %% Disconnect
 rob.disconnect();
+cam.disconnect();

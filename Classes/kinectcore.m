@@ -3,6 +3,7 @@ classdef kinectcore < handle
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
+        cam                 % selected kinect class
         CameraLocation      % Location of camera [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
         homeCameraLocation  % Home location of camera
         detectionVol        % Dimensions of volume where object are detected
@@ -10,7 +11,12 @@ classdef kinectcore < handle
     end
     
     methods
-        function obj = kinectcore()
+        function obj = kinectcore(cam_selected)
+            if cam_selected == 'vrep'
+                obj.cam = kinectvrep();
+            elseif cam_selected == 'real'
+                obj.cam = kinectreal();
+            end
             obj.homeCameraLocation = [0.67 2 1.08 90 0 0];
             obj.CameraLocation = zeros(1,6);
             obj.detectionVol = [-2.5 2.5 -2.5 1.99 0 2];
@@ -28,7 +34,44 @@ classdef kinectcore < handle
                     'Values are outside range.')
             end
         end
-
+        
+        function connect(obj)
+            obj.cam.connectDif();
+            obj.moveHome();
+        end
+        function disconnect (obj)
+            obj.cam.Close();
+        end
+        function moveToCameraLocation(obj,Location)
+            obj.CameraLocation = Location;
+            obj.cam.moveToCameraLocationDif(Location);
+        end
+        function moveHome(obj)
+            obj.moveToCameraLocation(obj.homeCameraLocation);
+        end
+        function [ptCloud] = getRawPointCloud(obj)
+            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+            ptCloud = pointCloud(XYZ);
+            ptCloud = obj.transformPointCloud(ptCloud);
+        end
+        function [ptCloud] = getDesampledPointCloud(obj)
+            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+            ptCloud = pointCloud(XYZ);
+            ptCloud = obj.desamplePointCloud(ptCloud);
+            ptCloud = obj.transformPointCloud(ptCloud);
+        end
+        function [ptCloud] = getFilteredPointCloud(obj)
+            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+            ptCloud = pointCloud(XYZ);
+            ptCloud = obj.desamplePointCloud(ptCloud);
+            ptCloud = obj.removeClippingPlane(ptCloud,5);
+            ptCloud = obj.transformPointCloud(ptCloud);
+            ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
+            ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
+        end
+        function [RGB] = getRGB(obj)
+            RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
+        end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
             RotMat = eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ');
             HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
@@ -113,10 +156,10 @@ classdef kinectcore < handle
             x2 = [-0.08 -0.08 -0.08 -0.08 -0.08;1.42 1.42 1.42 1.42 1.42];
             y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
             z2 = [0.835 0.795 0.795 0.835 0.835; 0.835 0.795 0.795 0.835 0.835];
-            surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')            
+            surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
             hold off
         end
-
+        
     end
     
     methods (Static)
@@ -184,7 +227,7 @@ classdef kinectcore < handle
             I.height = cameraParams.ImageSize(2);
             
         end
-
+        
     end
     
     
