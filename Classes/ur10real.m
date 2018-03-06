@@ -15,7 +15,8 @@ classdef ur10real < handle
         
         function connectDif(obj)
             %rosinit('http://192.168.1.110:11311', 'NodeHost', '192.168.1.100') %see what is the port/IP number
-            rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.101')
+       %    rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.101')
+       rosinit
                         
             %[armur, msgur]=rosactionclient('/vel_based_pos_traj_controller/follow_joint_trajectory');
             %[armur, msgur]=rosactionclient('/pos_based_pos_traj_controller/follow_joint_trajectory');
@@ -35,8 +36,7 @@ classdef ur10real < handle
             tjPoint2=rosmessage('trajectory_msgs/JointTrajectoryPoint');
             tjPoint2.Positions = JointTargetPositions.*pi./180;
             tjPoint2.Velocities = zeros(1,6);
-            
-            
+                        
             tjPoint1=rosmessage('trajectory_msgs/JointTrajectoryPoint');
             tjPoint1.Velocities = zeros(1,6);
             tjPoint1.TimeFromStart = rosduration(0);
@@ -46,13 +46,14 @@ classdef ur10real < handle
             
             [IntTime] = obj.Positions2IntTime(tjPoint1.Positions./pi.*180,JointTargetPositions,MaxJointSpeedFactor);
             tjPoint2.TimeFromStart = rosduration(IntTime);
-            
-            
+                        
             tjP=[tjPoint1, tjPoint2];
             obj.msgur.Trajectory.Points = tjP;
             %sendGoal(armur, msgur);    uncomment only when code is verified!!!
         end
-        
+
+    end
+    methods (Static)
         function [IntTime] = Positions2IntTime(StartPositions,EndPositions,MaxJointSpeedFactor)
             deltaA = abs(EndPositions-StartPositions);
             IntTime = max([deltaA(1:2)./120 deltaA(3:6)./180])*MaxJointSpeedFactor;
