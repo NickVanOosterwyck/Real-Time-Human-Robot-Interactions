@@ -53,7 +53,7 @@ classdef ur10real < handle
     methods (Static)
         function [IntTime] = Positions2IntTime(StartPositions,EndPositions,MaxJointSpeedFactor)
             deltaA = abs(EndPositions-StartPositions);
-            IntTime = max([deltaA(1:2)./120 deltaA(3:6)./180])*MaxJointSpeedFactor;
+            IntTime = max([deltaA(1:2)./120 deltaA(3:6)./180])/MaxJointSpeedFactor;
         end
     end
 end
