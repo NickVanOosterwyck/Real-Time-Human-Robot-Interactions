@@ -55,10 +55,10 @@ for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         while ~rob.checkPoseReached(Path(i,:))
-            tic
+            %tic
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
-            toc
+            %toc
             if ~isempty(indices) && min(dist)<rStop
                 [~] = rob.getJointPositions();
                 rob.stopRobot();

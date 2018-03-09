@@ -5,8 +5,8 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-% rob=ur10core('vrep');   
-rob=ur10core('real');   % choose ur10
+rob=ur10core('vrep');   
+%rob=ur10core('real');   % choose ur10
 rob.connect();
 
 %% Go home

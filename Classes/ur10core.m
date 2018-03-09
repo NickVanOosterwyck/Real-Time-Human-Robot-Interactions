@@ -64,7 +64,7 @@ classdef ur10core < handle
             [~] = obj.getJointPositions();
             pause(0.1)
             startPositions = obj.getJointPositions(); %2nd call because of streaming operation mode in VREP
-            %obj.moveToJointTargetPositions(startPositions,0.1);
+            obj.moveToJointTargetPositions(startPositions,0.1);
         end
         function [JointPositions] = getJointPositions(obj)
             JointPositions_rad=obj.rob.getJointPositionsDif();
@@ -76,9 +76,10 @@ classdef ur10core < handle
             obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
             
             if obj.checkPoseReached(JointTargetPositions)
-                disp('Target position is the same as current position')
+                disp('Target position is the same as current position.')
             else
-            obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+                obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+                disp('New Target positions are set.')
             end
         end
         function goHome(obj,MaxJointSpeedFactor)

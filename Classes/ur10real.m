@@ -38,11 +38,11 @@ classdef ur10real < handle
             tjPoint1=rosmessage('trajectory_msgs/JointTrajectoryPoint');
             tjPoint1.Velocities = zeros(1,6);
             tjPoint1.TimeFromStart = rosduration(0);
-            tjPoint1.Positions = obj.jpub5.LatestMessage.Position
+            tjPoint1.Positions = obj.jpub5.LatestMessage.Position;
             %tjPoint1.Positions(1) = obj.jpub5.LatestMessage.Position(3);
             %tjPoint1.Positions(3) = obj.jpub5.LatestMessage.Position(1);
             
-            [IntTime] = obj.Positions2IntTime(tjPoint1.Positions./pi.*180,JointTargetPositions,MaxJointSpeedFactor)
+            [IntTime] = obj.Positions2IntTime(tjPoint1.Positions./pi.*180,JointTargetPositions,MaxJointSpeedFactor);
             tjPoint2.TimeFromStart = rosduration(IntTime);
                         
             tjP=[tjPoint1, tjPoint2];
