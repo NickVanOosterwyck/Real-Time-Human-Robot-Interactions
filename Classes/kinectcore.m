@@ -17,9 +17,9 @@ classdef kinectcore < handle
             elseif cam_selected == 'real'
                 obj.cam = kinectreal();
             end
-            obj.homeCameraLocation = [0.67 2 1.08 90 0 0];
+            obj.homeCameraLocation = [0.67 1.68 1.09 90 0 0];
             obj.CameraLocation = zeros(1,6);
-            obj.detectionVol = [-2.5 2.5 -2.5 1.99 0 2];
+            obj.detectionVol = [-2 1.5 -2 1.6 0.86 2.3];
             obj.worktableVol = [-0.08 1.42 -0.7 0.7 0 2.32];
         end % constructor
         function set.CameraLocation(obj,Location)
@@ -149,13 +149,13 @@ classdef kinectcore < handle
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             % add robot base cylinder
             [x1,y1,z1] = cylinder(0.17/2,10);
-            z1(1, :) = 0.835;
-            z1(2, :) = 0.835+0.205;
+            z1(1, :) = 0.845;
+            z1(2, :) = 0.845+0.205;
             surf(x1,y1,z1,'FaceAlpha',0.3,'FaceColor','r')
             % add table top
             x2 = [-0.08 -0.08 -0.08 -0.08 -0.08;1.42 1.42 1.42 1.42 1.42];
             y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
-            z2 = [0.835 0.795 0.795 0.835 0.835; 0.835 0.795 0.795 0.835 0.835];
+            z2 = [0.845 0.805 0.805 0.845 0.845; 0.845 0.805 0.805 0.845 0.845];
             surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
             hold off
         end
@@ -167,6 +167,7 @@ classdef kinectcore < handle
             [ptCloud,~] = removeInvalidPoints(ptCloud);
             ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
             ptCloud = pcdenoise(ptCloud);
+            
         end
         function [ptCloud] = selectBox(ptCloud,dim,off)
             XYZ = ptCloud.Location;

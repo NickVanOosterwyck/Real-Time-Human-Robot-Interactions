@@ -1,4 +1,4 @@
-classdef kinectreal < handle
+classdef kinectreal < handle & Kinect
     %kinectreal Summary of this class goes here
     %   Detailed explanation goes here
     

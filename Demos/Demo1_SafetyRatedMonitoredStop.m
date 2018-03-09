@@ -15,7 +15,7 @@ cam.connect();
 
 %% Set up
 %-- move camera
-cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
+%cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
 
 %-- set positions
 Home = rob.homeJointTargetPositions;
@@ -25,10 +25,10 @@ Place = [-25 -125 -100 -135 -25 0];
 PlaceApp = [-25 -113.8520 -93.5075 -152.6405 -25 0];
 
 %-- create path
-Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
+Path =[Home;PickUpApp;PickUp;PickUpApp;Home;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 2.65/2;
+rStop = 3/2;
 
 %% Check pointclouds
 % Show pointcloud calibration
@@ -48,8 +48,9 @@ end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.6;
-iterations = 3;
+MaxSpeedFactor = 0.5;
+iterations = 6;
+threshold = 100;
 flag = 0;
 
 for it = 1:iterations
@@ -61,7 +62,7 @@ for it = 1:iterations
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
             %toc
-            if ~isempty(indices) && min(dist)<rStop
+            if ~isempty(indices) && sum(dist<rStop)>threshold
                 if flag ~=0 && (flag ==1 || flag ==2)
                 rob.stopRobot();
                 flag = 0; disp('Robot is stopped')

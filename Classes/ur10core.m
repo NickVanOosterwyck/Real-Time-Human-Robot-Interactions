@@ -20,8 +20,8 @@ classdef ur10core < handle
                 obj.rob = ur10real();
             end
             obj.homeJointTargetPositions = [0 -90 -90 -180 -90 0];
-            obj.TCPTargetPositions = zeros(1,6);
             obj.JointTargetPositions = zeros(1,6);
+            obj.TCPTargetPositions = zeros(1,6);
             obj.MaxJointSpeedFactor = 0;
             obj.TCPoffset = 0;
             obj.DH.JointOffset = [128 0 0 164 116 92 obj.TCPoffset];
@@ -71,14 +71,17 @@ classdef ur10core < handle
             JointPositions=round(JointPositions_rad/pi*180,2);
         end
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
-            obj.JointTargetPositions=JointTargetPositions;
-            obj.TCPTargetPositions=obj.ForwKin(JointTargetPositions);
-            obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
-            
-            if obj.checkPoseReached(JointTargetPositions)
-                disp('Target position is the same as current position.')
+            if sum(JointTargetPositions==obj.JointTargetPositions)==6
+                disp('Target position is the same as previous target position.')
             else
+                obj.JointTargetPositions=JointTargetPositions;
+                obj.TCPTargetPositions=obj.ForwKin(JointTargetPositions);
+                obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
+                if obj.checkPoseReached(JointTargetPositions)
+                disp('Target position is the same as current position.')
+                else
                 obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+                end
             end
         end
         function goHome(obj,MaxJointSpeedFactor)
