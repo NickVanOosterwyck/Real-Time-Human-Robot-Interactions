@@ -79,13 +79,13 @@ classdef ur10core < handle
                 disp('Target position is the same as current position.')
             else
                 obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
-                disp('New Target positions are set.')
             end
         end
         function goHome(obj,MaxJointSpeedFactor)
             obj.moveToJointTargetPositions(obj.homeJointTargetPositions,MaxJointSpeedFactor);
         end
         function stopRobot(obj)
+            [~] = obj.getJointPositions(); %because of streaming mode in VREP
             obj.moveToJointTargetPositions(obj.getJointPositions(),0.1); %value needs to be tested
         end
         function [flag] = checkPoseReached(obj,JointTargetPositions)

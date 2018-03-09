@@ -50,22 +50,35 @@ disp('Robot is ready in home pose.')
 %% Cycle
 MaxSpeedFactor = 0.6;
 iterations = 3;
+flag = 0;
 
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
+        flag = 1; disp('Next Target is set')
         while ~rob.checkPoseReached(Path(i,:))
             %tic
             [ptCloudFiltered] = cam.getFilteredPointCloud();
             [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
             %toc
             if ~isempty(indices) && min(dist)<rStop
-                [~] = rob.getJointPositions();
+                if flag ~=0 && (flag ==1 || flag ==2)
                 rob.stopRobot();
+                flag = 0; disp('Robot is stopped')
+                end
             else
+                if  flag ~=2 && (flag ==0 || flag ==1)
                 rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
+                flag = 2; disp('Robot continues')
+                end
             end
         end
     end
 end
+
+%% Flags
+% 0	Stop
+% 1	Next Target
+% 2	Move normal
+% 3	Move slow
 

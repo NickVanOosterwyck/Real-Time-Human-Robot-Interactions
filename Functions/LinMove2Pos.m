@@ -57,5 +57,17 @@ y3h = y2h+(l3*sind(theta1h+theta2h+theta3h));
 PositionsV = [Positions(1) theta1v-180 theta2v theta3v-90 Positions(5) Positions(6)];
 PositionsH = [Positions(1) theta1h-180 theta2h theta3h-90 Positions(5) Positions(6)];
 
+%% plot
+plot([0 x1s x2s x3s],[0 y1s y2s y3s],'-o','LineWidth',2);
+axis equal
+axis([-work work -work work]);
+hold on
+plot([0 x1v x2v x3v],[0 y1v y2v y3v],'-o','LineWidth',2);
+plot([0 x1h x2h x3h],[0 y1h y2h y3h],'-o','LineWidth',2);
+plot([x3s x3v],[y3s y3v],':','LineWidth',1);
+plot([x3s x3h],[y3s y3h],':','LineWidth',1);
+
+viscircles([0 0],work,'LineStyle','--','LineWidth',1);
+
 end
 
