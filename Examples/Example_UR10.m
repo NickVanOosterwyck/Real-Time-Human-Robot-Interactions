@@ -16,11 +16,9 @@ rob.goHome(0.05);
 rob.moveToJointTargetPositions([-25 -125 -100 -135 -25 0],0.01);
 
 %% Show TCP coordinates
-rob.TCPTargetPositions
+rob.TCPTargetPositions()
 
 %% Follow path
-diary on
-diary ('test1.txt')
 MaxJointSpeedFactor = 0.05;
 
 rob.goHome(MaxJointSpeedFactor);

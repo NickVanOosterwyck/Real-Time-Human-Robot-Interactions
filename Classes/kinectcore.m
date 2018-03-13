@@ -179,10 +179,9 @@ classdef kinectcore < handle
         function getPointCloudCalibration(obj)
             ptCloud = obj.getRawPointCloud();
             figure('Name','PointCloud Calibration');
-            s1 = pcshow(ptCloud);
+            pcshow(ptCloud);
             axis equal
-            s1.CameraPosition = obj.CameraLocation(1:3);
-            s1.CameraTarget = [0 0 0];
+            axis(obj.detectionVol)
             title('PointCloud Calibration')
             xlabel('X [m]');
             ylabel('Y [m]');
@@ -221,41 +220,37 @@ classdef kinectcore < handle
             quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             obj.plotTable();
-                        
-            while true %add other control
+            flag = 1;
+            function pushbutton(~,~)
+                flag = 0;
+            end
+            [~] = uicontrol('Style', 'pushbutton', 'String', 'Stop',...
+                'Position', [20 20 50 20],...
+                'Callback', @pushbutton);
+            
+            while flag==1
                 tic
                 ptCloud = obj.getFilteredPointCloud();
-                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
-                    pcshow(ptCloud,'MarkerSize',8)
-                else
-                    break
-                end
+                pcshow(ptCloud,'MarkerSize',8)
                 axis(obj.detectionVol)
+                grid on
                 [dist,Point] = obj.calculateClosestPoint(ptCloud);
-                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
-                    if ~isinf(dist)
-                        plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
-                        plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                        text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
-                    else
-                        plot3([0 0],[0 0],[0 0])
-                        plot3(Inf,Inf,Inf)
-                        text(0,0,1.3,'No point detected')
-                    end
+                if ~isinf(dist)
+                    plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
+                    plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
+                    text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
                 else
-                    break
+                    plot3([0 0],[0 0],[0 0])
+                    plot3(Inf,Inf,Inf)
+                    text(0,0,1.3,'No point detected')
                 end
                 drawnow
-                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
-                    children = get(gca, 'children');
-                    delete(children(1));
-                    delete(children(2));
-                    delete(children(3));
-                    delete(children(4));
-                    toc
-                else
-                    break
-                end
+                children = get(gca, 'children');
+                delete(children(1));
+                delete(children(2));
+                delete(children(3));
+                delete(children(4));
+                toc
             end
             close
             clc
