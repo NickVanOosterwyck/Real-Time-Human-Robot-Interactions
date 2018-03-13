@@ -221,44 +221,44 @@ classdef kinectcore < handle
             quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             obj.plotTable();
-            ptCloud = obj.getFilteredPointCloud();
-            [dist,Point] = obj.calculateClosestPoint(ptCloud);
-            pcshow(ptCloud,'MarkerSize',8);
-            axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
-            grid on
-            if ~isinf(dist)
-                plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
-                plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                text(Point(1)/2,Point(2)/2,((Point(3)-0.988)/2)+0.988,[' ' num2str(round(dist,2)) ' m'])
-            else
-                plot3([0 0],[0 0],[0 0])
-                plot3(Inf,Inf,Inf)
-                text(0,0,1.3,'No point detected')
-            end
-            
+                        
             while true %add other control
                 tic
-                children = get(gca, 'children');
-                delete(children(1));
-                delete(children(2));
-                delete(children(3));
-                delete(children(4));
                 ptCloud = obj.getFilteredPointCloud();
-                pcshow(ptCloud,'MarkerSize',8)
-                axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
-                [dist,Point] = obj.calculateClosestPoint(ptCloud);
-                if ~isinf(dist)
-                    plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
-                    plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                    text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
+                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
+                    pcshow(ptCloud,'MarkerSize',8)
                 else
-                    plot3([0 0],[0 0],[0 0])
-                    plot3(Inf,Inf,Inf)
-                    text(0,0,1.3,'No point detected')
+                    break
+                end
+                axis(obj.detectionVol)
+                [dist,Point] = obj.calculateClosestPoint(ptCloud);
+                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
+                    if ~isinf(dist)
+                        plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
+                        plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
+                        text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
+                    else
+                        plot3([0 0],[0 0],[0 0])
+                        plot3(Inf,Inf,Inf)
+                        text(0,0,1.3,'No point detected')
+                    end
+                else
+                    break
                 end
                 drawnow
-                toc
+                if ~isempty(findobj('type','figure','name','PointCloud Tracking Player'))
+                    children = get(gca, 'children');
+                    delete(children(1));
+                    delete(children(2));
+                    delete(children(3));
+                    delete(children(4));
+                    toc
+                else
+                    break
+                end
             end
+            close
+            clc
             
         end
         
