@@ -19,65 +19,57 @@ cam.connect();
 
 %-- set positions
 Home = rob.homeJointTargetPositions;
-PickUp = [45 -125 -100 -135 -135 0];
-PickUpApp = [45 -113.8520 -93.5075 -152.6405 -135 0];
-Place = [-25 -125 -100 -135 -25 0];
-PlaceApp = [-25 -113.8520 -93.5075 -152.6405 -25 0];
+PickUp = [45 -110 -80 -170 -135 0];
+PickUpApp = [45 -113.2953  -44.7716 -201.9331 -135 0];
+Place = [-25 -110 -80 -170 -25 0];
+PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 
 %-- create path
-Path =[Home;PickUpApp;PickUp;PickUpApp;Home;PlaceApp;Place;PlaceApp;Home];
+Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
 rStop = 3/2;
 
 %% Check pointclouds
-% Show pointcloud calibration
-[ptCloudRaw] = cam.getRawPointCloud();
-cam.showPointCloudCalibration(ptCloudRaw);
-
-% Show pointcloud comparison
-[ptCloudDesampled] = cam.getDesampledPointCloud();
-[ptCloudFiltered] = cam.getFilteredPointCloud();
-cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
+cam.getPointCloudCalibration();
+cam.getPointCloudComparison();
 
 %% Go home
-% limit speed
 rob.goHome(0.1);
 while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.5;
-iterations = 6;
-threshold = 100;
-flag = 0;
+MaxSpeedFactor = 0.3;
+range = 0.5;
+iterations = 3;
+state = 0;
 
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
-        flag = 1; disp('Next Target is set')
-        while ~rob.checkPoseReached(Path(i,:))
+        state = 1;
+        while ~rob.checkPoseReached(Path(i,:),range)
             %tic
-            [ptCloudFiltered] = cam.getFilteredPointCloud();
-            [indices, dist] = findNeighborsInRadius(ptCloudFiltered,[0 0 1],5);
+            [dist,~] = cam.getClosestPoint();
             %toc
-            if ~isempty(indices) && sum(dist<rStop)>threshold
-                if flag ~=0 && (flag ==1 || flag ==2)
+            if dist < rStop
+                if state ~=0 && (state ==1 || state ==2)
                 rob.stopRobot();
-                flag = 0; disp('Robot is stopped')
+                state = 0; disp('Robot is stopped')
                 end
             else
-                if  flag ~=2 && (flag ==0 || flag ==1)
+                if  state ~=2 && (state ==0 || state ==1)
                 rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
-                flag = 2; disp('Robot continues')
+                state = 2;
                 end
             end
         end
     end
 end
 
-%% Flags
+%% States
 % 0	Stop
 % 1	Next Target
 % 2	Move normal

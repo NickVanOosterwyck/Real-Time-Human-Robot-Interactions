@@ -15,12 +15,10 @@ classdef kinectreal < handle & Kinect
             %load camera_parameters.mat Ip;
             %obj.setParams(copy(Ip));
         end
-        function moveToCameraLocationDif(~,Location)
-            disp(['Camera Position is ',num2str(Location),' (x y z alfa beta gamma)']);
+        function moveToCameraLocationDif(~,~)
+            disp('Camera Position is has changed.');
         end
 
-        
-        
     end
 end
 

@@ -5,31 +5,29 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-%cam=kinectcore('vrep');
-cam=kinectcore('real');    % choose kinect
+cam=kinectcore('vrep');
+%cam=kinectcore('real');    % choose kinect
 cam.connect();
 
 %% Get raw pointcloud
 [ptCloudRaw] = cam.getRawPointCloud();
 cam.showPointCloud(ptCloudRaw);
 
-%% Get desampled pointcloud
-[ptCloudDesampled] = cam.getDesampledPointCloud();
-cam.showPointCloud(ptCloudDesampled);
-
 %% Get filtered pointcloud
 [ptCloudFiltered] = cam.getFilteredPointCloud();
 cam.showPointCloud(ptCloudFiltered);
 
-%% Check pointclouds
-% Show pointcloud calibration
-[ptCloudRaw] = cam.getRawPointCloud();
-cam.showPointCloudCalibration(ptCloudRaw);
-
-% Show pointcloud comparison
+%% Get desampled pointcloud
 [ptCloudDesampled] = cam.getDesampledPointCloud();
-[ptCloudFiltered] = cam.getFilteredPointCloud();
-cam.showPointCloudComparison(ptCloudDesampled,ptCloudFiltered);
+cam.showPointCloud(ptCloudDesampled);
+
+%% Check pointclouds
+cam.getPointCloudCalibration();
+cam.getPointCloudComparison();
+
+%% Show Player
+cam.showPlayer();
+cam.showTrackingPlayer(); %slower, but with live tracking
 
 %% Move camera
 cam.moveToCameraLocation([0 2 1 90 0 0]);       % north
@@ -39,5 +37,5 @@ cam.moveToCameraLocation([-2 0 1 90 0 0]);      % west
 
 cam.moveToCameraLocation([-1.5 1.5 1 90 45 0]); % north-west
 
-cam.moveToCameraLocation([0.67 1.68 1.09 90 0 0]); % home
+cam.moveToCameraLocation([cam.homeCameraLocation]); % home
 
