@@ -113,7 +113,7 @@ classdef kinectcore < handle
         end
         function showPointCloud(obj,ptCloud)
             figure('Name','PointCloud');
-            pcshow(ptCloud);
+            pcshow(ptCloud,'MarkerSize',8);
             axis equal
             title('PointCloud')
             xlabel('X [m]');
@@ -133,7 +133,7 @@ classdef kinectcore < handle
             
             figure('Name','PointCloud Comparison');
             s1=subplot(1,2,1);
-            pcshow(ptCloudDesampled)
+            pcshow(ptCloudDesampled,'MarkerSize',8)
             axis equal
             axis(obj.detectionVol)
             %s1.CameraPosition = obj.CameraLocation(1:3);
@@ -150,7 +150,7 @@ classdef kinectcore < handle
             hold off
             
             s2=subplot(1,2,2);
-            pcshow(ptCloudFiltered)
+            pcshow(ptCloudFiltered,'MarkerSize',8)
             axis equal
             s2.XLim = s1.XLim;
             s2.YLim = s1.YLim;
@@ -200,15 +200,18 @@ classdef kinectcore < handle
             [Dist,Point] = obj.calculateClosestPoint(ptCloud);  
         end
         function showPlayer(obj)
-            player = pcplayer(obj.detectionVol(1:2),obj.detectionVol(3:4),obj.detectionVol(5:6));
+            player = pcplayer(obj.detectionVol(1:2),obj.detectionVol(3:4),obj.detectionVol(5:6),'MarkerSize',8);
             while isOpen(player)
+               tic
                ptCloud = obj.getFilteredPointCloud();
                view(player, ptCloud);
+               toc
             end
+            clc
         end
         function showTrackingPlayer(obj)
-            figure('Name','PointCloud Player');
-            title('PointCloud Player')
+            figure('Name','PointCloud Tracking Player');
+            title('PointCloud Tracking Player')
             xlabel('X [m]');
             ylabel('Y [m]');
             zlabel('Z [m]');
@@ -220,8 +223,9 @@ classdef kinectcore < handle
             obj.plotTable();
             ptCloud = obj.getFilteredPointCloud();
             [dist,Point] = obj.calculateClosestPoint(ptCloud);
-            pcshow(ptCloud);
+            pcshow(ptCloud,'MarkerSize',8);
             axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
+            grid on
             if ~isinf(dist)
                 plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
                 plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
@@ -240,7 +244,7 @@ classdef kinectcore < handle
                 delete(children(3));
                 delete(children(4));
                 ptCloud = obj.getFilteredPointCloud();
-                pcshow(ptCloud)
+                pcshow(ptCloud,'MarkerSize',8)
                 axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
                 [dist,Point] = obj.calculateClosestPoint(ptCloud);
                 if ~isinf(dist)
