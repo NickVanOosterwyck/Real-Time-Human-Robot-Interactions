@@ -36,13 +36,13 @@ cam.getPointCloudComparison();
 
 %% Go home
 rob.goHome(0.1);
-while ~rob.checkPoseReached(rob.homeJointTargetPositions)
+while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.5)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
 MaxSpeedFactor = 0.3;
-range = 0.5;
+Range = 0.5;
 iterations = 3;
 state = 0;
 
@@ -50,7 +50,7 @@ for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state = 1;
-        while ~rob.checkPoseReached(Path(i,:),range)
+        while ~rob.checkPoseReached(Path(i,:),Range)
             %tic
             [dist,~] = cam.getClosestPoint();
             %toc

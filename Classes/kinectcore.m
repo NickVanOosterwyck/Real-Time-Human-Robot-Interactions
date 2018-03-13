@@ -2,7 +2,7 @@ classdef kinectcore < handle
     %kinectcore Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties %(SetAccess = protected)
+    properties (SetAccess = protected)
         cam                 % selected kinect class
         CameraLocation      % Location of camera [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
         homeCameraLocation  % Home location of camera
@@ -83,9 +83,9 @@ classdef kinectcore < handle
         function [ptCloud] = getRawPointCloud(obj)
             XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
             ptCloud = pointCloud(XYZ);
-            if isa(obj.cam,'kinectvrep')
-                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 5],0.05); %remove clipping plane
-            end
+%             if isa(obj.cam,'kinectvrep')
+%                 ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 5],0.05); %remove clipping plane
+%             end
             ptCloud = obj.transformPointCloud(ptCloud);
         end
         function [ptCloud] = transformPointCloud(obj,ptCloud)

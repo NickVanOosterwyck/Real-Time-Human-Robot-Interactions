@@ -18,7 +18,8 @@ cam.showPointCloud(ptCloudRaw);
 cam.showPointCloud(ptCloudFiltered);
 
 %% Get desampled pointcloud
-[ptCloudDesampled] = cam.getDesampledPointCloud();
+tic
+[ptCloudDesampled] = cam.getDesampledPointCloud();toc
 cam.showPointCloud(ptCloudDesampled);
 
 %% Check pointclouds
