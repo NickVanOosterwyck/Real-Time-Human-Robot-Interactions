@@ -67,9 +67,9 @@ classdef kinectcore < handle
         end
         function [ptCloud] = desamplePointCloud(obj,ptCloud)
             [ptCloud,~] = removeInvalidPoints(ptCloud);
-            ptCloud = pcdownsample(ptCloud,'gridAverage',0.1);
+            ptCloud = pcdownsample(ptCloud,'gridAverage',0.07);
             if isa(obj.cam,'kinectvrep')
-                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 5],0.05); %remove clipping plane
+                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
             end
             ptCloud = obj.transformPointCloud(ptCloud);
             ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
@@ -83,9 +83,9 @@ classdef kinectcore < handle
         function [ptCloud] = getRawPointCloud(obj)
             XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
             ptCloud = pointCloud(XYZ);
-%             if isa(obj.cam,'kinectvrep')
-%                 ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 5],0.05); %remove clipping plane
-%             end
+            if isa(obj.cam,'kinectvrep')
+                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
+            end
             ptCloud = obj.transformPointCloud(ptCloud);
         end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
@@ -97,6 +97,7 @@ classdef kinectcore < handle
             Result = HomoTransMat*XYZ;
             ptCloud = pointCloud(Result(1:3,:).');
         end
+        
         
         function [RGB] = getRGB(obj)
             RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
@@ -128,12 +129,13 @@ classdef kinectcore < handle
         function getPointCloudComparison(obj)
             ptCloudDesampled = obj.getDesampledPointCloud();
             ptCloudFiltered = obj.filterPointCloud(ptCloudDesampled);
-            [dist,Point] = obj.getClosestPoint();
+            [dist,Point] = obj.calculateClosestPoint(ptCloudFiltered);
             
             figure('Name','PointCloud Comparison');
             s1=subplot(1,2,1);
             pcshow(ptCloudDesampled)
             axis equal
+            axis(obj.detectionVol)
             %s1.CameraPosition = obj.CameraLocation(1:3);
             %s1.CameraTarget = [0 0 0];
             title('PointCloud Desampled')
@@ -167,6 +169,7 @@ classdef kinectcore < handle
             obj.plotTable();
             if ~isinf(dist)
                 plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
+                plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
                 text(Point(1)/2,Point(2)/2,((Point(3)-0.988)/2)+0.988,[' ' num2str(round(dist,2)) ' m'])
             else
                 text(0,0,1.3,'No point detected')
@@ -194,14 +197,7 @@ classdef kinectcore < handle
         end
         function [Dist,Point] = getClosestPoint(obj)
             ptCloud = obj.getFilteredPointCloud();
-            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],1,'Sort',true);
-            if ~isempty(indices)
-                Dist = dists(1);
-                Point = ptCloud.Location(indices,:);
-            else
-                Dist = inf;
-                Point = [inf,inf,inf];
-            end
+            [Dist,Point] = obj.calculateClosestPoint(ptCloud);  
         end
         function showPlayer(obj)
             player = pcplayer(obj.detectionVol(1:2),obj.detectionVol(3:4),obj.detectionVol(5:6));
@@ -223,34 +219,41 @@ classdef kinectcore < handle
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             obj.plotTable();
             ptCloud = obj.getFilteredPointCloud();
+            [dist,Point] = obj.calculateClosestPoint(ptCloud);
             pcshow(ptCloud);
             axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
-            [dist,Point] = obj.getClosestPoint();
             if ~isinf(dist)
                 plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
+                plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
                 text(Point(1)/2,Point(2)/2,((Point(3)-0.988)/2)+0.988,[' ' num2str(round(dist,2)) ' m'])
             else
                 plot3([0 0],[0 0],[0 0])
+                plot3(Inf,Inf,Inf)
                 text(0,0,1.3,'No point detected')
             end
             
             while true %add other control
+                tic
                 children = get(gca, 'children');
                 delete(children(1));
                 delete(children(2));
                 delete(children(3));
+                delete(children(4));
                 ptCloud = obj.getFilteredPointCloud();
                 pcshow(ptCloud)
                 axis([obj.detectionVol(1:2) obj.detectionVol(3:4) obj.detectionVol(5:6)])
-                [dist,Point] = obj.getClosestPoint();
+                [dist,Point] = obj.calculateClosestPoint(ptCloud);
                 if ~isinf(dist)
                     plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
+                    plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
                     text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
                 else
                     plot3([0 0],[0 0],[0 0])
+                    plot3(Inf,Inf,Inf)
                     text(0,0,1.3,'No point detected')
                 end
-                drawnow 
+                drawnow
+                toc
             end
             
         end
@@ -281,6 +284,16 @@ classdef kinectcore < handle
             y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
             z2 = [0.845 0.805 0.805 0.845 0.845; 0.845 0.805 0.805 0.845 0.845];
             surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
+        end
+        function [Dist,Point] = calculateClosestPoint(ptCloud)
+            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],1,'Sort',true);
+            if ~isempty(indices)
+                Dist = dists(1);
+                Point = ptCloud.Location(indices(1),:);
+            else
+                Dist = inf;
+                Point = [inf,inf,inf];
+            end
         end
         
     end
