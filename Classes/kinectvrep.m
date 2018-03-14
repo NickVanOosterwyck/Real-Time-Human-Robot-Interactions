@@ -16,8 +16,8 @@ classdef kinectvrep < handle & VREP_Projector
             else
                 error('Problem with connection!!!\n%s','Make sure the simulation in VREP is running and try again.')
             end
-            load camera_parameters.mat Ip;
-            obj.setParams(copy(Ip));
+            load CameraData.mat I_depth;
+            obj.setParams(copy(I_depth));
 %             load cameraParams.mat cameraParams; %cameraParams are the RGB camera parameters
 %             I = obj.cameraParameters2IntrinsicMatrix(cameraParams);
 %             obj.setParams(copy(I));
