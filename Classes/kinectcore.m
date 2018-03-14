@@ -53,7 +53,9 @@ classdef kinectcore < handle
         
         function connect(obj)
             obj.cam.connectDif();
-            obj.moveHome();
+            if isa(obj.cam,'kinectvrep')
+                obj.moveToCameraLocation(obj.homeCameraLocation);
+            end
         end
         function disconnect (obj)
             obj.cam.Close();
@@ -62,8 +64,9 @@ classdef kinectcore < handle
             obj.CameraLocation = Location;
             obj.cam.moveToCameraLocationDif(Location);
         end
-        function moveHome(obj)
-            obj.moveToCameraLocation(obj.homeCameraLocation);
+        function setdetecionVol(obj,detectionVol)
+            obj.detectionVol=detectionVol;
+            obj.cam.moveToDetectionVolLocationDif(detectionVol);
         end
         function [ptCloud] = desamplePointCloud(obj,ptCloud)
             [ptCloud,~] = removeInvalidPoints(ptCloud);

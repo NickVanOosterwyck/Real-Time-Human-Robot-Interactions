@@ -16,7 +16,10 @@ classdef kinectreal < handle & Kinect
             %obj.setParams(copy(Ip));
         end
         function moveToCameraLocationDif(~,~)
-            disp('Camera Position is has changed.');
+            disp('Camera Position has been changed.');
+        end
+        function moveToDetectionVolLocationDif(~,~)
+            disp('Detection Volume has been changed.');
         end
 
     end

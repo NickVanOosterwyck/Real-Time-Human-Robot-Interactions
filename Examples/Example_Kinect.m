@@ -9,6 +9,9 @@ cam=kinectcore('vrep');
 %cam=kinectcore('real');    % choose kinect
 cam.connect();
 
+%% set detectionVol
+cam.setdetecionVol([-2 1.5 -2 1.6 0 2.3]);
+
 %% Get raw pointcloud
 [ptCloudRaw] = cam.getRawPointCloud();
 cam.showPointCloud(ptCloudRaw);
