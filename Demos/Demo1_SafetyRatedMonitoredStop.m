@@ -28,7 +28,7 @@ PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 3/2;
+rStop = 1;
 
 %% Check pointclouds
 cam.getPointCloudCalibration();
@@ -36,14 +36,14 @@ cam.getPointCloudComparison();
 
 %% Go home
 rob.goHome(0.1);
-while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.5)
+while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.1)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.3;
-Range = 0.5;
-iterations = 3;
+MaxSpeedFactor = 0.1;
+Range = 0.1;
+iterations = 1;
 
 state = 0;
 for it = 1:iterations
@@ -52,7 +52,7 @@ for it = 1:iterations
         state = 1;
         while ~rob.checkPoseReached(Path(i,:),Range)
             %tic
-            [dist,~] = cam.getClosestPoint();
+            [dist,~] = cam.getClosestPoint()
             %toc
             if dist < rStop
                 if state ~=0 && (state ==1 || state ==2)

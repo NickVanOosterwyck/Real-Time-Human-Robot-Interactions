@@ -72,4 +72,9 @@ end
 rob.goHome(MaxJointSpeedFactor);
 while ~rob.checkPoseReached(rob.homeJointTargetPositions)
 end
+%% test
+rob.moveToJointTargetPositions([20 -110 -80 -170 -135 0],0.1);
+%%
+rob.moveToJointTargetPositions([20.1 -110 -80 -170 -135 0],0.1);
+
 
