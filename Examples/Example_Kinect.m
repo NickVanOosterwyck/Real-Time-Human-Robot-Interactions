@@ -5,8 +5,8 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-cam=kinectcore('vrep');
-%cam=kinectcore('real');    % choose kinect
+%cam=kinectcore('vrep');
+cam=kinectcore('real');    % choose kinect
 cam.connect();
 
 %% set detectionVol
@@ -35,7 +35,6 @@ cam.showPlayer();
 cam.showTrackingPlayer(); %slower, but with live tracking
 
 %% Move camera
-cam.moveHome();
 cam.moveToCameraLocation([-1.5 1.5 1 90 45 0]); % north-west
 
 

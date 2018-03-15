@@ -53,9 +53,7 @@ classdef kinectcore < handle
         
         function connect(obj)
             obj.cam.connectDif();
-            if isa(obj.cam,'kinectvrep')
-                obj.moveToCameraLocation(obj.homeCameraLocation);
-            end
+            obj.moveToCameraLocation(obj.homeCameraLocation);
         end
         function disconnect (obj)
             obj.cam.Close();
@@ -70,16 +68,18 @@ classdef kinectcore < handle
         end
         function [ptCloud] = desamplePointCloud(obj,ptCloud)
             [ptCloud,~] = removeInvalidPoints(ptCloud);
-            ptCloud = pcdownsample(ptCloud,'gridAverage',0.07);
+            ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
             if isa(obj.cam,'kinectvrep')
                 ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
             end
             ptCloud = obj.transformPointCloud(ptCloud);
+            ptCloud = obj.removeBox(ptCloud,[1 1.5 0 0.7 0 2.3],0.1); % remove computer
             ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
         end
         function [ptCloud] = filterPointCloud(obj,ptCloud)
             if ~isempty(ptCloud.Location)
-                ptCloud = pcdenoise(ptCloud,'Threshold',1);
+                ptCloud = pcdenoise(ptCloud,'Threshold',0.01,'NumNeighbors',20);
+                ptCloud = pcdenoise(ptCloud,'Threshold',0.1);
             end
             ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
         end
@@ -100,7 +100,6 @@ classdef kinectcore < handle
             Result = HomoTransMat*XYZ;
             ptCloud = pointCloud(Result(1:3,:).');
         end
-        
         
         function [RGB] = getRGB(obj)
             RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
@@ -288,10 +287,10 @@ classdef kinectcore < handle
             surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
         end
         function [Dist,Point] = calculateClosestPoint(ptCloud)
-            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],1,'Sort',true);
-            if ~isempty(indices)
-                Dist = dists(1);
-                Point = ptCloud.Location(indices(1),:);
+            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],20,'Sort',true);
+            if ~isempty(indices)&&length(indices)>10
+                Dist = dists(10);
+                Point = ptCloud.Location(indices(10),:);
             else
                 Dist = inf;
                 Point = [inf,inf,inf];
