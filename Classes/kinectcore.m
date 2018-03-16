@@ -83,14 +83,6 @@ classdef kinectcore < handle
             end
             ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
         end
-        function [ptCloud] = getRawPointCloud(obj)
-            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
-            ptCloud = pointCloud(XYZ);
-            if isa(obj.cam,'kinectvrep')
-                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
-            end
-            ptCloud = obj.transformPointCloud(ptCloud);
-        end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
             RotMat = eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ');
             HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
@@ -103,6 +95,14 @@ classdef kinectcore < handle
         
         function [RGB] = getRGB(obj)
             RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
+        end
+        function [ptCloud] = getRawPointCloud(obj)
+            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+            ptCloud = pointCloud(XYZ);
+            if isa(obj.cam,'kinectvrep')
+                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
+            end
+            ptCloud = obj.transformPointCloud(ptCloud);
         end
         function [ptCloud] = getDesampledPointCloud(obj)
             XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
@@ -198,7 +198,7 @@ classdef kinectcore < handle
         end
         function [Dist,Point] = getClosestPoint(obj)
             ptCloud = obj.getFilteredPointCloud();
-            [Dist,Point] = obj.calculateClosestPoint(ptCloud);  
+            [Dist,Point] = obj.calculateClosestPoint(ptCloud);
         end
         function showPlayer(obj)
             player = pcplayer(obj.detectionVol(1:2),obj.detectionVol(3:4),obj.detectionVol(5:6),'MarkerSize',8);

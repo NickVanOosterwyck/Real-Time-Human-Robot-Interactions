@@ -33,38 +33,49 @@ classdef ur10vrep < handle
                 [~,obj.JointHandles(i)]=obj.vrep.simxGetObjectHandle(obj.clientID,['UR10_joint',num2str(i)],obj.vrep.simx_opmode_blocking);
             end
         end
-        function [JointPositions_rad] = getJointPositionsDif(obj)
+        function [JointPositions] = getJointPositionsDif(obj)
             JointPositions_rad=zeros(1,6);
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
             for i=1:6
                 [~,JointPositions_rad(i)]=obj.vrep.simxGetJointPosition(obj.clientID,obj.JointHandles(i),obj.vrep.simx_opmode_streaming);
             end
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
+            JointPositions=JointPositions_rad/pi*180;
         end
         function moveToJointTargetPositionsDif(obj,JointTargetPositions,MaxJointSpeedFactor)
-            obj.sendMaxJointSpeedFactor(MaxJointSpeedFactor);
+            deltaAng = abs(JointTargetPositions-obj.getJointPositionsDif());
+            [IntTime] = max([deltaAng(1:2)./120 deltaAng(3:6)./180])/MaxJointSpeedFactor;
+            Velocities = max(deltaAng/IntTime,1);
+            
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
+            for i=1:6
+                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),Velocities(i)*pi/180,obj.vrep.simx_opmode_streaming);
+            end
             for i=1:6
                 [~]=obj.vrep.simxSetJointTargetPosition(obj.clientID,obj.JointHandles(i),JointTargetPositions(i)*pi/180,obj.vrep.simx_opmode_streaming);
             end
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
         end
-        function sendMaxJointSpeedFactor(obj,MaxJointSpeedFactor)
-            [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
-            for i=1:2
-                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),120*MaxJointSpeedFactor*pi/180,obj.vrep.simx_opmode_streaming);
-            end
-            for i=3:4
-                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),180*MaxJointSpeedFactor*pi/180,obj.vrep.simx_opmode_streaming);
-            end
-            for i=5:6
-                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),min(180*MaxJointSpeedFactor*2,180)*pi/180,obj.vrep.simx_opmode_streaming);
-            end
-            [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
-
+%         function sendMaxJointSpeeds(obj,MaxJointSpeedFactor),
+%             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
+%             for i=1:2
+%                 [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),120*MaxJointSpeedFactor*pi/180,obj.vrep.simx_opmode_streaming);
+%             end
+%             for i=3:4
+%                 [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),180*MaxJointSpeedFactor*pi/180,obj.vrep.simx_opmode_streaming);
+%             end
+%             for i=5:6
+%                 [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),min(180*MaxJointSpeedFactor*2,180)*pi/180,obj.vrep.simx_opmode_streaming);
+%             end
+%             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
+%  
+%          end
+    end
+    methods (Static)
+        function [IntTime] = Positions2IntTime(StartPositions,EndPositions,MaxJointSpeedFactor)
+            deltaAng = abs(EndPositions-StartPositions);
+            IntTime = max([deltaAng(1:2)./120 deltaAng(3:6)./180])/MaxJointSpeedFactor;
         end
-        
-        
     end
 end
 

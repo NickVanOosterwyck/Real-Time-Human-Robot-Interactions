@@ -25,8 +25,9 @@ classdef ur10real < handle
             pause(1)
             obj.msgur.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
         end
-        function [JointPositions_rad] = getJointPositionsDif(obj)
+        function [JointPositions] = getJointPositionsDif(obj)
             JointPositions_rad = obj.jpub5.LatestMessage.Position.';
+            JointPositions=JointPositions_rad/pi*180;
             %JointPositions_rad(1) = obj.jpub5.LatestMessage.Position(3);
             %JointPositions_rad(3) = obj.jpub5.LatestMessage.Position(1);
         end
@@ -47,14 +48,14 @@ classdef ur10real < handle
                         
             tjP=[tjPoint1, tjPoint2];
             obj.msgur.Trajectory.Points = tjP;
-            sendGoal(obj.armur, obj.msgur);    %uncomment only when code is verified!!!
+            sendGoal(obj.armur, obj.msgur); 
         end
 
     end
     methods (Static)
         function [IntTime] = Positions2IntTime(StartPositions,EndPositions,MaxJointSpeedFactor)
-            deltaA = abs(EndPositions-StartPositions);
-            IntTime = max([deltaA(1:2)./120 deltaA(3:6)./180])/MaxJointSpeedFactor;
+            deltaAng = abs(EndPositions-StartPositions);
+            IntTime = max([deltaAng(1:2)./120 deltaAng(3:6)./180])/MaxJointSpeedFactor;
         end
     end
 end

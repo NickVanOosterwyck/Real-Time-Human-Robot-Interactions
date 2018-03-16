@@ -16,22 +16,22 @@ cam.connect();
 %% Set up
 %-- set positions
 Home = rob.homeJointTargetPositions;
-PickUp = [20 -110 -80 -170 -135 0];
-PickUpApp = [20 -113.2953  -44.7716 -201.9331 -135 0];
-Place = [-20 -110 -80 -170 -25 0];
-PlaceApp = [-20 -113.2953  -44.7716 -201.9331 -25 0];
+PickUp = [45 -110 -80 -170 -135 0];
+PickUpApp = [45 -113.2953  -44.7716 -201.9331 -135 0];
+Place = [-25 -110 -80 -170 -25 0];
+PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 
 %-- create path
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %% Go home
-rob.goHome(0.05);
-while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.5)
+rob.goHome(0.1);
+while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.1)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.1;
+MaxSpeedFactor = 0.2;
 Range = 0.1;
 iterations = 1;
 

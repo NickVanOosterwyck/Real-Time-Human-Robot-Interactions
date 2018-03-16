@@ -52,7 +52,7 @@ for it = 1:iterations
         state = 1;
         while ~rob.checkPoseReached(Path(i,:),Range)
             %tic
-            [dist,~] = cam.getClosestPoint()
+            [dist,~] = cam.getClosestPoint();
             %toc
             if dist < rStop
                 if state ~=0 && (state ==1 || state ==2)

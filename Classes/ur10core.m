@@ -68,8 +68,7 @@ classdef ur10core < handle
             obj.TCPTargetPositions=obj.ForwKin(startPositions);
         end
         function [JointPositions] = getJointPositions(obj)
-            JointPositions_rad=obj.rob.getJointPositionsDif();
-            JointPositions=round(JointPositions_rad/pi*180,2);
+            JointPositions=obj.rob.getJointPositionsDif();
         end
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
             if isequal(JointTargetPositions,obj.JointTargetPositions)
@@ -78,11 +77,7 @@ classdef ur10core < handle
                 obj.JointTargetPositions=JointTargetPositions;
                 obj.TCPTargetPositions=obj.ForwKin(JointTargetPositions);
                 obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
-%                 if obj.checkPoseReached(JointTargetPositions)
-%                 disp('Target position is the same as current position.')
-%                 else
                 obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
-%                 end
             end
         end
         function goHome(obj,MaxJointSpeedFactor)
