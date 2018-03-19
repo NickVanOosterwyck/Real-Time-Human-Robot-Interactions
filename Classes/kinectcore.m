@@ -11,10 +11,14 @@ classdef kinectcore < handle
     end
     
     methods
-        function obj = kinectcore(cam_selected)
-            if cam_selected == 'vrep'
+        function obj = kinectcore(CameraType)
+            p = inputParser;
+            acceptedInput = {'vrep','real'};
+            p.addRequired('CameraType',@(x) any(validatestring(x,acceptedInput)));
+            p.parse(CameraType);
+            if p.Results.CameraType == 'vrep'
                 obj.cam = kinectvrep();
-            elseif cam_selected == 'real'
+            else
                 obj.cam = kinectreal();
             end
             obj.homeCameraLocation = [0.67 1.68 1.09 90 0 0];
@@ -287,7 +291,7 @@ classdef kinectcore < handle
             surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
         end
         function [Dist,Point] = calculateClosestPoint(ptCloud)
-            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],20,'Sort',true);
+            [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],11,'Sort',true);
             if ~isempty(indices)&&length(indices)>10
                 Dist = dists(10);
                 Point = ptCloud.Location(indices(10),:);

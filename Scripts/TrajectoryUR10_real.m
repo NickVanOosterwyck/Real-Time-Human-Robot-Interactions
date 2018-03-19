@@ -10,7 +10,7 @@ rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.101')
 
 jpub5=rossubscriber('/joint_states');
 
-msgur.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}'
+msgur.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
 
 
 %% initialization of UR10 robot in position tjPoint3

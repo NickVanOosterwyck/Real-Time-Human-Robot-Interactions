@@ -41,8 +41,8 @@ y3v = y2v+(l3*sind(theta1v+theta2v+theta3v));
 x2h = x2s + dist;
 y2h = y2s;
 
-theta2h = atan2d(-sqrt(1-((x2h^2+y2h^2-l1^2-l2^2)/(2*l1*l2))^2),(x2h^2+y2h^2-l1^2-l2^2)/(2*l1*l2));
-theta1h = atan2d(sqrt(1-(((x2h*(l1+(l2*cosd(theta2h))))+(y2h*l2*sind(theta2h)))/(x2h^2+y2h^2))^2),((x2h*(l1+(l2*cosd(theta2h))))+(y2h*l2*sind(theta2h)))/(x2h^2+y2h^2));
+theta2h = atan2d(-sqrt(1-((x2h^2+y2h^2-l1^2-l2^2)/(2*l1*l2))^2),(x2h^2+y2h^2-l1^2-l2^2)/(2*l1*l2))
+theta1h = atan2d(sqrt(1-(((x2h*(l1+(l2*cosd(theta2h))))+(y2h*l2*sind(theta2h)))/(x2h^2+y2h^2))^2),((x2h*(l1+(l2*cosd(theta2h))))+(y2h*l2*sind(theta2h)))/(x2h^2+y2h^2))
 % ref: http://cdn.intechweb.org/pdfs/379.pdf
 theta3h = -90-theta1h-theta2h;
 

@@ -4,9 +4,10 @@ clear; close all; clc
 %% Add path
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
-%% Create & connect
-%cam=kinectcore('vrep');
-cam=kinectcore('real');    % choose kinect
+%% Create & Connect
+CameraType = 'vrep';    % vrep or real
+
+cam=kinectcore(CameraType);
 cam.connect();
 
 %% set detectionVol

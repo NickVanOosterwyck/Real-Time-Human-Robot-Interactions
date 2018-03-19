@@ -13,10 +13,14 @@ classdef ur10core < handle
     end
     
     methods
-        function obj = ur10core(rob_selected)
-            if rob_selected == 'vrep'
+        function obj = ur10core(RobotType)
+            p = inputParser;
+            acceptedInput = {'vrep','real'};
+            p.addRequired('RobotType',@(x) any(validatestring(x,acceptedInput)));
+            p.parse(RobotType);
+            if p.Results.RobotType == 'vrep'
                 obj.rob = ur10vrep();
-            elseif rob_selected == 'real'
+            else
                 obj.rob = ur10real();
             end
             obj.homeJointTargetPositions = [0 -90 -90 -180 -90 0];
@@ -58,6 +62,9 @@ classdef ur10core < handle
                     'Use values between 0 and 1.')
             end
         end
+        function [TCPTargetPositions] = get.TCPTargetPositions(obj)
+            TCPTargetPositions=obj.ForwKin(obj.JointTargetPositions); 
+        end
         
         function connect(obj)
             obj.rob.connectDif();
@@ -72,13 +79,12 @@ classdef ur10core < handle
         end
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
             if isequal(JointTargetPositions,obj.JointTargetPositions)
-                disp('Target position is the same as previous target position.')
-            else
-                obj.JointTargetPositions=JointTargetPositions;
-                obj.TCPTargetPositions=obj.ForwKin(JointTargetPositions);
-                obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
-                obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+                JointTargetPositions = JointTargetPositions+0.1;
             end
+            obj.JointTargetPositions=JointTargetPositions;
+            obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
+            obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+        
         end
         function goHome(obj,MaxJointSpeedFactor)
             obj.moveToJointTargetPositions(obj.homeJointTargetPositions,MaxJointSpeedFactor);
@@ -112,6 +118,9 @@ classdef ur10core < handle
             
             Eul = rotm2eul(HomoMat(1:3,1:3),'XYZ')./pi.*180;
             TCP = [HomoMat(1:3,4).' Eul];
+        end
+        function JointPositions = InvKin (obj, TCP)
+            % under construction 'Nick'
         end
         
     end

@@ -4,9 +4,10 @@ clear; close all; clc
 %% Add path
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
-%% Create & connect
-rob=ur10core('vrep');   
-%rob=ur10core('real');   % choose ur10
+%% Create & Connect
+RobotType = 'vrep';     % vrep or real
+
+rob=ur10core(RobotType);
 rob.connect();
 
 %% Go home

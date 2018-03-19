@@ -5,13 +5,13 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Connect
-%rob=ur10core('vrep');    %-- choose UR10
-rob=ur10core('real');
-rob.connect();
+CameraType = 'vrep';    % vrep or real
+RobotType = 'vrep';     % vrep or real
 
-%cam=kinectcore('vrep');  %-- choose kinect
-cam=kinectcore('real');
+cam=kinectcore(CameraType);
+rob=ur10core(RobotType);
 cam.connect();
+rob.connect();
 
 %% Set up
 %-- set positions
