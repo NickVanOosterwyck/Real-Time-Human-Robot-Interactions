@@ -9,15 +9,15 @@ rob.connect();
 
 %% InvKin
 JointPositions = [0 -80 -40 -180 -90 0];
-TCP = rob.ForwKin(JointPositions)
+TCP = rob.ForwKin(JointPositions);
+%TCP = [664 -164 624 0 90 90];                     %output [0 -90 -90 -180 -90 0]
+%TCP = [615.4006 -559.9200 108.8560 90 0 0];       %output [-25 -125 -100 -135 -25 0]
+TCP = [400 -400 400 90 0 0];                       %output [0 -90 0 -90 0 0]
 
 ang = [zeros(1,6) 0];
 d = rob.DH.JointOffset;
 a = rob.DH.LinkLength;
 alf = rob.DH.LinkTwist;
-%TCP = [664 -164 624 0 90 90];                     %output [0 -90 -90 -180 -90 0]
-%TCP = [615.4006 -559.9200 108.8560 90 0 0];       %output [-25 -125 -100 -135 -25 0]
-%TCP = [500 0 500 90 0 -180];       %output [0 -90 0 -90 0 0]
 
 p07 = TCP(1:3)';
 R07 = eul2rotm(TCP(4:6).*pi./180,'XYZ');
@@ -59,8 +59,6 @@ ang(2) = ang(2)-180;
 
 H10 = inv(H01);
 H14 = H01\H04; % H14 = H10*H04
-phi = atan2d(-H14(2,3),H14(1,3));
-ang(4) = -phi-270-ang(2)-ang(3);
+ang(4) = -atan2d(-H14(2,3),H14(1,3))-270-ang(2)-ang(3);
 
-ang
 rob.moveToJointTargetPositions(ang(1:6),0.5);

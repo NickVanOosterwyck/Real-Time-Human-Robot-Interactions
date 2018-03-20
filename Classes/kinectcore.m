@@ -277,6 +277,14 @@ classdef kinectcore < handle
             indInv = setdiff((1:ptCloud.Count),ind);
             [ptCloud] = select(ptCloud,indInv);
             
+        end 
+        function [ptCloud] = removeCylinder(ptCloud,dim,off)
+            % under construction
+            flagBelowVec = (pointZVec <= topZ);
+            flagAboveVec = (pointZVec >= botZ);
+            radialDistanceSquaredVec = (pointXVec-centerX)^2 + (pointYVec-centerY)^2;
+            flagInsideVec = (radialDistanceSquaredVec <= radius^2);
+            flagIsIn = (flagBelowVec & flagAboveVec & flagInsideVec);
         end
         function plotTable()
             % add robot base cylinder
