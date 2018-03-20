@@ -81,7 +81,7 @@ classdef controller < handle %& kinectcore & ur10core
         
         function [Dist,Point,TCP] = calculateClosestPointToTCP(obj,ptCloud)
             JointPositions = obj.rob.getJointPositions();
-            TCP = obj.rob.ForwKin(JointPositions);
+            [TCP,~,~] = obj.rob.ForwKin(JointPositions);
             TCP =TCP(1:3)./1000;
             TCP(3)=TCP(3)+0.86;
             [indices, dists] = findNearestNeighbors(ptCloud,TCP,11,'Sort',true);

@@ -63,7 +63,7 @@ classdef ur10core < handle
             end
         end
         function [TCPTargetPositions] = get.TCPTargetPositions(obj)
-            TCPTargetPositions=obj.ForwKin(obj.JointTargetPositions); 
+            [TCPTargetPositions,~,~]=obj.ForwKin(obj.JointTargetPositions); 
         end
         
         function connect(obj)
@@ -72,7 +72,7 @@ classdef ur10core < handle
             pause(0.1)
             startPositions = obj.getJointPositions(); %2nd call because of streaming operation mode in VREP
             obj.JointTargetPositions=startPositions;
-            obj.TCPTargetPositions=obj.ForwKin(startPositions);
+            [obj.TCPTargetPositions,~,~]=obj.ForwKin(startPositions);
         end
         function [JointPositions] = getJointPositions(obj)
             JointPositions=obj.rob.getJointPositionsDif();
@@ -104,23 +104,28 @@ classdef ur10core < handle
                 flag=0;
             end
         end
-        function TCP = ForwKin(obj,JointPositions)
+        function [TCP,R,T] = ForwKin(obj,JointPositions)
             ang = [JointPositions 0];
             d = obj.DH.JointOffset;
             a = obj.DH.LinkLength;
             alf = obj.DH.LinkTwist;
-            HomoMat = eye(4,4);
             
+            % transformation i-1 to i
+            R(:,:,1) = eye(4,4);
             for i=1:7
-                A = [cosd(ang(i)) -sind(ang(i))*cosd(alf(i)) sind(ang(i))*sind(alf(i)) a(i)*cosd(ang(i)); ...
+                R(:,:,i) = [cosd(ang(i)) -sind(ang(i))*cosd(alf(i)) sind(ang(i))*sind(alf(i)) a(i)*cosd(ang(i)); ...
                     sind(ang(i)) cosd(ang(i))*cosd(alf(i)) -cosd(ang(i))*sind(alf(i)) a(i)*sind(ang(i)); ...
                     0 sind(alf(i)) cosd(alf(i)) d(i); ...
                     0 0 0 1];
-                HomoMat = HomoMat*A;
+            end
+            % transformation 0 to i
+            T(:,:,1) = R(:,:,1);
+            for i=2:7
+                T(:,:,i) = T(:,:,i-1)*R(:,:,i);
             end
             
-            Eul = rotm2eul(HomoMat(1:3,1:3),'XYZ')./pi.*180;
-            TCP = [HomoMat(1:3,4).' Eul];
+            Eul = rotm2eul(T(1:3,1:3,7),'XYZ')./pi.*180;
+            TCP = [T(1:3,4,7).' Eul];
         end
         function JointPositions = InvKin (obj,TCP)
             ang = [zeros(1,6) 0];

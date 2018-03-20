@@ -291,12 +291,12 @@ classdef kinectcore < handle
             [x1,y1,z1] = cylinder(0.17/2,10);
             z1(1, :) = 0.845;
             z1(2, :) = 0.845+0.205;
-            surf(x1,y1,z1,'FaceAlpha',0.3,'FaceColor','r')
+            mesh(x1,y1,z1,'FaceAlpha',0,'EdgeColor','b')
             % add table top
             x2 = [-0.08 -0.08 -0.08 -0.08 -0.08;1.42 1.42 1.42 1.42 1.42];
             y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
             z2 = [0.845 0.805 0.805 0.845 0.845; 0.845 0.805 0.805 0.845 0.845];
-            surf(x2,y2,z2,'FaceAlpha',0.3,'FaceColor','r')
+            mesh(x2,y2,z2,'FaceAlpha',0,'EdgeColor','b');
         end
         function [Dist,Point] = calculateClosestPoint(ptCloud)
             [indices, dists] = findNearestNeighbors(ptCloud,[0 0 0.988],11,'Sort',true);
