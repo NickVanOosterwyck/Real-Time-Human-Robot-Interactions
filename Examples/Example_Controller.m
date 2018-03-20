@@ -14,5 +14,8 @@ rob = 'vrep';
 ctrl = controller(cam,rob);
 ctrl.connect();
 
+%% Show Processed PointCloud
+ctrl.showProcessedPointCloud();
+
 %% Show Player
 ctrl.showTrackingPlayerToTCP();
