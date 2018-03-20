@@ -9,10 +9,9 @@ rob.connect();
 
 %% InvKin
 JointPositions = [0 -80 -40 -180 -90 0];
-TCP = rob.ForwKin(JointPositions);
+[TCP,~,~] = rob.ForwKin(JointPositions);
 %TCP = [664 -164 624 0 90 90];                     %output [0 -90 -90 -180 -90 0]
 %TCP = [615.4006 -559.9200 108.8560 90 0 0];       %output [-25 -125 -100 -135 -25 0]
-TCP = [400 -400 400 90 0 0];                       %output [0 -90 0 -90 0 0]
 
 ang = [zeros(1,6) 0];
 d = rob.DH.JointOffset;

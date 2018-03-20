@@ -74,6 +74,9 @@ classdef controller < handle %& kinectcore & ur10core
             clc
             
         end
+        function drawLinkCS(obj)
+            % under consrtuction
+        end
         
         function [Dist,Point,TCP] = calculateClosestPointToTCP(obj,ptCloud)
             JointPositions = obj.rob.getJointPositions();
