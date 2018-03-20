@@ -118,6 +118,7 @@ classdef ur10core < handle
                     0 sind(alf(i)) cosd(alf(i)) d(i); ...
                     0 0 0 1];
             end
+            
             % transformation 0 to i
             T(:,:,1) = R(:,:,1);
             for i=2:7

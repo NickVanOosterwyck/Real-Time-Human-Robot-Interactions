@@ -29,16 +29,12 @@ classdef controller < handle %& kinectcore & ur10core
         end
         function showTrackingPlayerToTCP(obj)
             figure('Name','PointCloud Tracking Player To TCP');
-            title('PointCloud Tracking Player To TCP')
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
+            title('PointCloud Tracking Player')
+            obj.cam.plotPointCloud([Inf Inf Inf]);
             hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.cam.CameraLocation(1:3),'Orientation',eul2rotm(obj.cam.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            obj.cam.plotTable();
+            obj.cam.drawRobotBase();
+            obj.cam.drawBox(obj.cam.worktableVol);
+            
             flag = 1;
             function pushbutton(~,~)
                 flag = 0;

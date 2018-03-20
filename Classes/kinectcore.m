@@ -24,7 +24,7 @@ classdef kinectcore < handle
             obj.homeCameraLocation = [0.67 1.68 1.09 90 0 0];
             obj.CameraLocation = zeros(1,6);
             obj.detectionVol = [-2 1.5 -2 1.6 0 2.3];
-            obj.worktableVol = [-0.08 1.42 -0.7 0.7 0 2.32];
+            obj.worktableVol = [-0.08 1.42 -0.7 0.7 0 0.845];
         end % constructor
         function set.CameraLocation(obj,Location)
             if length(Location)==6 && isnumeric(Location) ...
@@ -85,7 +85,9 @@ classdef kinectcore < handle
                 ptCloud = pcdenoise(ptCloud,'Threshold',0.01,'NumNeighbors',20);
                 ptCloud = pcdenoise(ptCloud,'Threshold',0.1);
             end
-            ptCloud = obj.removeBox(ptCloud,obj.worktableVol,0.1); % remove worktable
+            box=obj.worktableVol;
+            box(6) = 2.3;
+            ptCloud = obj.removeBox(ptCloud,box,0.1); % remove worktable
         end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
             RotMat = eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ');
@@ -117,11 +119,10 @@ classdef kinectcore < handle
             [ptCloud] = obj.getDesampledPointCloud();
             [ptCloud] = obj.filterPointCloud(ptCloud);
         end
-        function showPointCloud(obj,ptCloud)
-            figure('Name','PointCloud');
+        function plotPointCloud(obj,ptCloud)
             pcshow(ptCloud,'MarkerSize',8);
             axis equal
-            title('PointCloud')
+            axis(obj.detectionVol)
             xlabel('X [m]');
             ylabel('Y [m]');
             zlabel('Z [m]');
@@ -138,41 +139,16 @@ classdef kinectcore < handle
             [dist,Point] = obj.calculateClosestPoint(ptCloudFiltered);
             
             figure('Name','PointCloud Comparison');
-            s1=subplot(1,2,1);
-            pcshow(ptCloudDesampled,'MarkerSize',8)
-            axis equal
-            axis(obj.detectionVol)
-            %s1.CameraPosition = obj.CameraLocation(1:3);
-            %s1.CameraTarget = [0 0 0];
+            subplot(1,2,1);
             title('PointCloud Desampled')
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
-            hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            hold off
-            
-            s2=subplot(1,2,2);
-            pcshow(ptCloudFiltered,'MarkerSize',8)
-            axis equal
-            s2.XLim = s1.XLim;
-            s2.YLim = s1.YLim;
-            s2.ZLim = s1.ZLim;
-            s2.CameraPosition = s1.CameraPosition;
-            s2.CameraTarget = s1.CameraTarget;
+            obj.plotPointCloud(ptCloudDesampled);
+
+            subplot(1,2,2);
             title('PointCloud Filtered')
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
+            obj.plotPointCloud(ptCloudFiltered);
             hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            obj.plotTable();
+            obj.drawRobotBase();
+            obj.drawBox(obj.worktableVol);
             if ~isinf(dist)
                 plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
                 plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
@@ -183,21 +159,12 @@ classdef kinectcore < handle
             hold off
         end
         function getPointCloudCalibration(obj)
-            ptCloud = obj.getRawPointCloud();
+            ptCloudRaw = obj.getRawPointCloud();
             figure('Name','PointCloud Calibration');
-            pcshow(ptCloud);
-            axis equal
-            axis(obj.detectionVol)
-            title('PointCloud Calibration')
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
+            obj.plotPointCloud(ptCloudRaw);
             hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            obj.plotTable();
+            obj.drawRobotBase();
+            obj.drawBox(obj.worktableVol);
             hold off
         end
         function [Dist,Point] = getClosestPoint(obj)
@@ -217,15 +184,11 @@ classdef kinectcore < handle
         function showTrackingPlayer(obj)
             figure('Name','PointCloud Tracking Player');
             title('PointCloud Tracking Player')
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
+            obj.plotPointCloud([Inf Inf Inf]);
             hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            obj.plotTable();
+            obj.drawRobotBase();
+            obj.drawBox(obj.worktableVol);
+            
             flag = 1;
             function pushbutton(~,~)
                 flag = 0;
@@ -251,7 +214,7 @@ classdef kinectcore < handle
                     text(0,0,1.3,'No point detected')
                 end
                 drawnow
-                children = get(gca, 'children');
+                children = get(gca, 'children')
                 delete(children(1));
                 delete(children(2));
                 delete(children(3));
@@ -278,24 +241,27 @@ classdef kinectcore < handle
             [ptCloud] = select(ptCloud,indInv);
             
         end 
+        %{     
         function [ptCloud] = removeCylinder(ptCloud,dim,off)
-            % under construction
+            under construction
             flagBelowVec = (pointZVec <= topZ);
             flagAboveVec = (pointZVec >= botZ);
             radialDistanceSquaredVec = (pointXVec-centerX)^2 + (pointYVec-centerY)^2;
             flagInsideVec = (radialDistanceSquaredVec <= radius^2);
             flagIsIn = (flagBelowVec & flagAboveVec & flagInsideVec);
         end
-        function plotTable()
+        %}
+        function drawRobotBase()
             % add robot base cylinder
             [x1,y1,z1] = cylinder(0.17/2,10);
             z1(1, :) = 0.845;
             z1(2, :) = 0.845+0.205;
             mesh(x1,y1,z1,'FaceAlpha',0,'EdgeColor','b')
-            % add table top
-            x2 = [-0.08 -0.08 -0.08 -0.08 -0.08;1.42 1.42 1.42 1.42 1.42];
-            y2 = [-0.7 -0.7 0.7 0.7 -0.7; -0.7 -0.7 0.7 0.7 -0.7];
-            z2 = [0.845 0.805 0.805 0.845 0.845; 0.845 0.805 0.805 0.845 0.845];
+        end
+        function drawBox(dim)
+            x2 = [dim(1) dim(1) dim(1) dim(1) dim(1); dim(2) dim(2) dim(2) dim(2) dim(2)];
+            y2 = [dim(3) dim(3) dim(4) dim(4) dim(3); dim(3) dim(3) dim(4) dim(4) dim(3)];
+            z2 = [dim(6) dim(5) dim(5) dim(6) dim(6); dim(6) dim(5) dim(5) dim(6) dim(6)];
             mesh(x2,y2,z2,'FaceAlpha',0,'EdgeColor','b');
         end
         function [Dist,Point] = calculateClosestPoint(ptCloud)

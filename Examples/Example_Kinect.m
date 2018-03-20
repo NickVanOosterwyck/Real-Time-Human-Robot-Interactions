@@ -15,15 +15,15 @@ cam.setdetecionVol([-2 1.5 -2 1.6 0 2.3]);
 
 %% Get raw pointcloud
 [ptCloudRaw] = cam.getRawPointCloud();
-cam.showPointCloud(ptCloudRaw);
+cam.plotPointCloud(ptCloudRaw);
 
 %% Get filtered pointcloud
 [ptCloudFiltered] = cam.getFilteredPointCloud();
-cam.showPointCloud(ptCloudFiltered);
+cam.plotPointCloud(ptCloudFiltered);
 
 %% Get desampled pointcloud
 [ptCloudDesampled] = cam.getDesampledPointCloud();
-cam.showPointCloud(ptCloudDesampled);
+cam.plotPointCloud(ptCloudDesampled);
 
 %% Get comparison
 cam.getPointCloudComparison();
