@@ -18,9 +18,6 @@ classdef kinectreal < handle & Kinect
         function moveToCameraLocationDif(~,~)
             disp('Camera Position has been changed.');
         end
-        function moveToDetectionVolLocationDif(~,~)
-            disp('Detection Volume has been changed.');
-        end
 
     end
 end

@@ -68,27 +68,26 @@ classdef kinectcore < handle
         end
         function setdetecionVol(obj,detectionVol)
             obj.detectionVol=detectionVol;
-            obj.cam.moveToDetectionVolLocationDif(detectionVol);
         end
-        function [ptCloud] = desamplePointCloud(obj,ptCloud)
-            [ptCloud,~] = removeInvalidPoints(ptCloud);
-            ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
-            if isa(obj.cam,'kinectvrep')
-                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
-            end
-            ptCloud = obj.transformPointCloud(ptCloud);
-            ptCloud = obj.removeBox(ptCloud,[1 1.5 0 0.7 0 2.3],0.1); % remove computer
-            ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
-        end
-        function [ptCloud] = filterPointCloud(obj,ptCloud)
-            if ~isempty(ptCloud.Location)
-                ptCloud = pcdenoise(ptCloud,'Threshold',0.01,'NumNeighbors',20);
-                ptCloud = pcdenoise(ptCloud,'Threshold',0.1);
-            end
-            box=obj.worktableVol;
-            box(6) = 2.3;
-            ptCloud = obj.removeBox(ptCloud,box,0.1); % remove worktable
-        end
+%         function [ptCloud] = desamplePointCloud(obj,ptCloud)
+%             [ptCloud,~] = removeInvalidPoints(ptCloud);
+%             ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
+%             if isa(obj.cam,'kinectvrep')
+%                 ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
+%             end
+%             ptCloud = obj.transformPointCloud(ptCloud);
+%             ptCloud = obj.removeBox(ptCloud,[1 1.5 0 0.7 0 2.3],0.1); % remove computer
+%             ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0.1); % select detection area
+%         end
+%         function [ptCloud] = filterPointCloud(obj,ptCloud)
+%             if ~isempty(ptCloud.Location)
+%                 ptCloud = pcdenoise(ptCloud,'Threshold',0.01,'NumNeighbors',20);
+%                 ptCloud = pcdenoise(ptCloud,'Threshold',0.1);
+%             end
+%             box=obj.worktableVol;
+%             box(6) = 2.3;
+%             ptCloud = obj.removeBox(ptCloud,box,0.1); % remove worktable
+%         end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
             RotMat = eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ');
             HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
@@ -102,23 +101,23 @@ classdef kinectcore < handle
         function [RGB] = getRGB(obj)
             RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
         end
-        function [ptCloud] = getRawPointCloud(obj)
-            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
-            ptCloud = pointCloud(XYZ);
-            if isa(obj.cam,'kinectvrep')
-                ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
-            end
-            ptCloud = obj.transformPointCloud(ptCloud);
-        end
-        function [ptCloud] = getDesampledPointCloud(obj)
-            XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
-            ptCloud = pointCloud(XYZ);
-            ptCloud = obj.desamplePointCloud(ptCloud);
-        end
-        function [ptCloud] = getFilteredPointCloud(obj)
-            [ptCloud] = obj.getDesampledPointCloud();
-            [ptCloud] = obj.filterPointCloud(ptCloud);
-        end
+%         function [ptCloud] = getRawPointCloud(obj)
+%             XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+%             ptCloud = pointCloud(XYZ);
+%             if isa(obj.cam,'kinectvrep')
+%                 ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf 4],0.05); %remove clipping plane
+%             end
+%             ptCloud = obj.transformPointCloud(ptCloud);
+%         end
+%         function [ptCloud] = getDesampledPointCloud(obj)
+%             XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+%             ptCloud = pointCloud(XYZ);
+%             ptCloud = obj.desamplePointCloud(ptCloud);
+%         end
+%         function [ptCloud] = getFilteredPointCloud(obj)
+%             [ptCloud] = obj.getDesampledPointCloud();
+%             [ptCloud] = obj.filterPointCloud(ptCloud);
+%         end
         function plotPointCloud(obj,ptCloud)
             pcshow(ptCloud,'MarkerSize',8);
             axis equal
@@ -168,14 +167,14 @@ classdef kinectcore < handle
             hold off
         end
         function [Dist,Point] = getClosestPoint(obj)
-            ptCloud = obj.getFilteredPointCloud();
+            ptCloud = obj.getPointCloud('Filtered');
             [Dist,Point] = obj.calculateClosestPoint(ptCloud);
         end
         function showPlayer(obj)
             player = pcplayer(obj.detectionVol(1:2),obj.detectionVol(3:4),obj.detectionVol(5:6),'MarkerSize',8);
             while isOpen(player)
                tic
-               ptCloud = obj.getFilteredPointCloud();
+               ptCloud = obj.getPointCloud('Filtered');
                view(player, ptCloud);
                toc
             end
@@ -183,8 +182,8 @@ classdef kinectcore < handle
         end
         function showTrackingPlayer(obj)
             figure('Name','PointCloud Tracking Player');
-            title('PointCloud Tracking Player')
             obj.plotPointCloud([Inf Inf Inf]);
+            title('PointCloud Tracking Player')
             hold on
             obj.drawRobotBase();
             obj.drawBox(obj.worktableVol);
@@ -199,7 +198,7 @@ classdef kinectcore < handle
             
             while flag==1
                 tic
-                ptCloud = obj.getFilteredPointCloud();
+                ptCloud = obj.getPointCloud('Filtered');
                 pcshow(ptCloud,'MarkerSize',8)
                 axis(obj.detectionVol)
                 grid on
@@ -214,7 +213,7 @@ classdef kinectcore < handle
                     text(0,0,1.3,'No point detected')
                 end
                 drawnow
-                children = get(gca, 'children')
+                children = get(gca, 'children');
                 delete(children(1));
                 delete(children(2));
                 delete(children(3));
@@ -226,6 +225,49 @@ classdef kinectcore < handle
             
         end
         
+        function [ptCloud] = getPointCloud(obj,varargin)
+            % input
+            p = inputParser;
+            acceptedInput = {'Raw','Desampled','Filtered'};
+            p.addRequired('obj');
+            p.addOptional('Type','Raw',@(x) any(validatestring(x,acceptedInput)));
+            p.addOptional('ptCloudIn',[]);
+            p.parse(obj,varargin{:});
+            
+            % get new pointcloud if no pointcloud is provided
+            if isempty(p.Results.ptCloudIn)
+                XYZ = obj.cam.GetFrame(TofFrameType.XYZ_3_COLUMNS);
+                ptCloud = pointCloud(XYZ);
+            else
+                ptCloud = ptCloudIn;
+            end
+            
+            if any(strcmp(p.Results.Type,'Raw'))
+                ptCloud = obj.transformPointCloud(ptCloud); % transform to WCS
+                ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0); % select detection area
+            end
+            
+            
+            if any(strcmp(p.Results.Type,{'Desampled','Filtered'}))
+                [ptCloud,~] = removeInvalidPoints(ptCloud);
+                ptCloud = pcdownsample(ptCloud,'gridAverage',0.05);
+                if isa(obj.cam,'kinectvrep')
+                    ptCloud = obj.selectBox(ptCloud,[-inf inf -inf inf -inf obj.cam.ClippingPlane],0.05);
+                end
+                ptCloud = obj.transformPointCloud(ptCloud); % transform to WCS
+                ptCloud = obj.selectBox(ptCloud,obj.detectionVol,0); % select detection area
+            end
+            
+            if any(strcmp(p.Results.Type,{'Filtered'}))
+                ptCloud = obj.removeBox(ptCloud,[1 1.5 0 0.7 0 2.3],0.1); % remove computer
+                ptCloud = pcdenoise(ptCloud,'Threshold',0.01,'NumNeighbors',20);
+                ptCloud = pcdenoise(ptCloud,'Threshold',0.1);
+                box=obj.worktableVol;
+                box(6) = 2.3;
+                ptCloud = obj.removeBox(ptCloud,box,0.1); % remove worktable
+            end
+
+        end
     end
     
     methods (Static)

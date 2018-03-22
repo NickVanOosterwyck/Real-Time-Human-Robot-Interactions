@@ -4,10 +4,12 @@ classdef kinectvrep < handle & VREP_Projector
     
     properties (SetAccess = protected) 
         h_camera
+        ClippingPlane   % distance of clipping plane in VREP
     end
     
     methods
         function obj = kinectvrep()
+            obj.ClippingPlane = 4;
         end % conctructor
 
         function connectDif(obj)
@@ -27,10 +29,6 @@ classdef kinectvrep < handle & VREP_Projector
         function moveToCameraLocationDif(obj,Location)
             [~]=obj.simObj.simxSetObjectOrientation(obj.clientID,obj.handle,-1,Location(4:6)./180.*pi,obj.simObj.simx_opmode_oneshot);
             [~]=obj.simObj.simxSetObjectPosition(obj.clientID,obj.handle,-1,Location(1:3),obj.simObj.simx_opmode_oneshot);
-        end
-        function moveToDetectionVolLocationDif(~,~)
-            warning('Detection Area in VREP does not update visually!\n%s',...
-                'Change dimensions in VREP manually to change the Detection Area')
         end
         
     end

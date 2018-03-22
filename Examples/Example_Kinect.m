@@ -25,6 +25,11 @@ cam.plotPointCloud(ptCloudFiltered);
 [ptCloudDesampled] = cam.getDesampledPointCloud();
 cam.plotPointCloud(ptCloudDesampled);
 
+%% Get Pointcloud
+[ptCloud] = cam.getPointCloud('Filtered');
+[ptCloud] = cam.getPointCloud('Filtered',ptCloud);
+cam.plotPointCloud(ptCloud);
+
 %% Get comparison
 cam.getPointCloudComparison();
 

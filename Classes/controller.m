@@ -22,9 +22,29 @@ classdef controller < handle %& kinectcore & ur10core
             obj.cam.connect();
             obj.rob.connect();
         end
-        function [Dist,Point] = getClosestPointToTCP(obj)
-            ptCloud = obj.cam.getFilteredPointCloud();
-            [Dist,Point,~] = obj.calculateClosestPointToTCP(ptCloud);
+        
+        function [Dist,StartPoint,EndPoint] = getClosestPoint(obj,Reference,varargin)
+            p = inputParser;
+            acceptedInput = {'Base','TCP'};
+            p.addRequired('obj');
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
+            p.addOptional('ptCloudIn',[]);
+            p.parse(obj,Reference,varargin{:});
+            
+            % get new pointcloud if no pointcloud is provided
+            if isempty(p.Results.ptCloudIn)
+                ptCloud = obj.cam.getPointCloud('Filtered');
+            else
+                ptCloud = ptCloudIn;
+            end
+            
+            if strcmp(p.Results.Reference,'Base')
+                [Dist,EndPoint] = obj.cam.calculateClosestPoint(ptCloud);
+                StartPoint = [0 0 0.988];
+            else
+                [Dist,EndPoint,StartPoint] = obj.calculateClosestPointToTCP(ptCloud);
+                
+            end
             
         end
         function showTrackingPlayerToTCP(obj)
@@ -125,7 +145,6 @@ classdef controller < handle %& kinectcore & ur10core
             end
             
         end
-
 
     end
 end

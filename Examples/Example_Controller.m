@@ -19,3 +19,8 @@ ctrl.showProcessedPointCloud();
 
 %% Show Player
 ctrl.showTrackingPlayerToTCP();
+
+%% Calculate closest distance
+ptCloud = ctrl.cam.getFilteredPointCloud();
+[Dist1,Start1,End1] = ctrl.calculateClosestPoint(ptCloud,'Base');
+[Dist2,Start2,End2] = ctrl.calculateClosestPoint(ptCloud,'TCP');

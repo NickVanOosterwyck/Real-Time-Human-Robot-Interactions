@@ -8,17 +8,15 @@ clear; close all; clc
 CameraType = 'vrep';    % vrep or real
 RobotType = 'vrep';     % vrep or real
 
-cam=kinectcore(CameraType);
-rob=ur10core(RobotType);
-cam.connect();
-rob.connect();
+ctrl = controller(CameraType,RobotType);
+ctrl.connect();
 
 %% Set up
 %-- move camera
-%cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
+%ctrl.cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
 
 %-- set positions
-Home = rob.homeJointTargetPositions;
+Home = ctrl.rob.homeJointTargetPositions;
 PickUp = [45 -110 -80 -170 -135 0];
 PickUpApp = [45 -113.2953  -44.7716 -201.9331 -135 0];
 Place = [-25 -110 -80 -170 -25 0];
@@ -32,13 +30,13 @@ rStop = 1;
 rSlow = 1.7;
 
 %% Check pointclouds
-cam.getPointCloudCalibration();
-cam.getPointCloudComparison();
+ctrl.cam.getPointCloudCalibration();
+ctrl.cam.getPointCloudComparison();
 
 %% Go home
 % limit speed
-rob.goHome(0.1);
-while ~rob.checkPoseReached(rob.homeJointTargetPositions,0.1)
+ctrl.rob.goHome(0.1);
+while ~ctrl.rob.checkPoseReached(ctrl.rob.homeJointTargetPositions,0.2)
 end
 disp('Robot is ready in home pose.')
 
@@ -53,25 +51,26 @@ for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state=1;
-        while ~rob.checkPoseReached(Path(i,:),Range)
+        while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             %tic
-            [dist,~] = cam.getClosestPoint()
+            %[dist,~] = ctrl.getClosestPoint('Base');   % choose reference
+            [dist,~] = ctrl.getClosestPoint('TCP');
             %toc
             if  dist<rStop
                 if state ~=0
-                rob.stopRobot(); disp('Robot is stopped')
+                ctrl.rob.stopRobot(); disp('Robot is stopped')
                 state=0;
                 end
             elseif dist>rStop && dist<rSlow
                 if abs(lastDist-dist)>0.25 || state==1
                     lastDist = dist;
                     Speedfactor = min(((dist-rStop)/(rSlow-rStop))*MaxSpeedFactor,MaxSpeedFactor);
-                    rob.moveToJointTargetPositions(Path(i,:),Speedfactor);
+                    ctrl.rob.moveToJointTargetPositions(Path(i,:),Speedfactor);
                 end
                 state=3;
             else
                 if state ~=2
-                    rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
+                    ctrl.rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
                 state=2;
                 end
             end

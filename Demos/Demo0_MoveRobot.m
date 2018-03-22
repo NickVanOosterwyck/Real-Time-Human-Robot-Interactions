@@ -32,7 +32,7 @@ disp('Robot is ready in home pose.')
 
 %% Cycle
 MaxSpeedFactor = 0.2;
-Range = 0.1;
+Range = 0.5;
 iterations = 1;
 
 state = 0;

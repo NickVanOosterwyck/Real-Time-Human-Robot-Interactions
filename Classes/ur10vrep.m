@@ -6,6 +6,7 @@ classdef ur10vrep < handle
         vrep            % object for communicating with VREP                [1x1 remApi]
         clientID;       % number of Matlab port (-1 if connection failed)   [1x1 double]
         JointHandles;   % handles of joints                                 [1x6 double]
+        
     end
     
     methods

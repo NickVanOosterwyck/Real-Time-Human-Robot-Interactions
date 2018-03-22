@@ -8,7 +8,7 @@ clear; close all; clc
 CameraType = 'vrep';    % vrep or real
 RobotType = 'vrep';     % vrep or real
 
-ctrl = controller(CameraType,rob);
+ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
 %% Set up
