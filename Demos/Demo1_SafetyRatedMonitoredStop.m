@@ -5,8 +5,8 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Create & Connect
-CameraType = 'vrep';    % vrep or real
-RobotType = 'vrep';     % vrep or real
+CameraType = 'real';    % vrep or real
+RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
@@ -27,10 +27,6 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 %-- set safety distances
 rStop = 1;
 
-%% Check pointclouds
-ctrl.cam.getPointCloudCalibration();
-ctrl.cam.getPointCloudComparison();
-
 %% Go home
 ctrl.rob.goHome(0.1);
 while ~ctrl.rob.checkPoseReached(ctrl.rob.homeJointTargetPositions,0.2)
@@ -38,34 +34,42 @@ end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.1;
+MaxSpeedFactor = 0.2;
 Range = 0.2;
+treshold = 0.25;
 iterations = 1;
+Ref = 'TCP'; % choose TCP or Base
 
 state = 0;
+LastDist=Inf;
+dis = controlDisplay();
+dis.setValues('Reference',Ref,'SpeedFactor',MaxSpeedFactor);
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state = 1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             %tic
-            %[dist,~] = ctrl.getClosestPoint('Base');   % choose reference
-            [dist,~] = ctrl.getClosestPoint('TCP');
-            %toc
-            if dist < rStop
-                if state ~=0
-                ctrl.rob.stopRobot();
-                state = 0; disp('Robot is stopped')
+            [Dist,~,~] = ctrl.getClosestPoint(Ref);
+            if Dist < rStop
+                if state ~=0 && abs(LastDist-Dist)>treshold
+                    LastDist = Dist;
+                    ctrl.rob.stopRobot();
+                    state = 0; disp('Robot is stopped')
                 end
             else
-                if  state ~=2
-                ctrl.rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
-                state = 2;
+                if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1)
+                    LastDist = Dist;
+                    ctrl.rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
+                    state = 2; disp(['Robot is moved to Pose' num2str(i)])
                 end
             end
+            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state);
+            %toc
         end
     end
 end
+close all
 disp('End of loop reached')
 
 %% States

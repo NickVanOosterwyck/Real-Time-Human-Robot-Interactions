@@ -6,7 +6,7 @@ clear; close all; clc
 
 %% Create & Connect
 CameraType = 'vrep';    % vrep or real
-RobotType = 'vrep';     % vrep or real
+RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
@@ -29,54 +29,63 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 rStop = 1;
 rSlow = 1.7;
 
-%% Check pointclouds
-ctrl.cam.getPointCloudCalibration();
-ctrl.cam.getPointCloudComparison();
-
 %% Go home
 % limit speed
-ctrl.rob.goHome(0.1);
+ctrl.rob.goHome(0.2);
 while ~ctrl.rob.checkPoseReached(ctrl.rob.homeJointTargetPositions,0.2)
 end
 disp('Robot is ready in home pose.')
 
 %% Cycle
-MaxSpeedFactor = 0.1;
+MaxSpeedFactor = 0.2;
 Range = 0.2;
+treshold = 0.4;
 iterations = 1;
+Ref = 'Base'; % choose TCP or Base
 
 state = 0;
-lastDist=Inf;
+LastDist=Inf;
+PrevDist =[Inf Inf Inf Inf Inf];
+dis = controlDisplay();
+dis.setValues('Reference',Ref);
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state=1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             %tic
-            %[dist,~] = ctrl.getClosestPoint('Base');   % choose reference
-            [dist,~] = ctrl.getClosestPoint('TCP');
-            %toc
-            if  dist<rStop
-                if state ~=0
-                ctrl.rob.stopRobot(); disp('Robot is stopped')
-                state=0;
+            [Dist,~] = ctrl.getClosestPoint(Ref);
+            PrevDist= [PrevDist(2:5) Dist];
+            Dist = mean(PrevDist);
+            if  Dist<rStop
+                if state ~=0 && abs(LastDist-Dist)>treshold
+                    LastDist = Dist;
+                    ctrl.rob.stopRobot(); disp('Robot is stopped')
+                    state=0;
                 end
-            elseif dist>rStop && dist<rSlow
-                if abs(lastDist-dist)>0.25 || state==1
-                    lastDist = dist;
-                    Speedfactor = min(((dist-rStop)/(rSlow-rStop))*MaxSpeedFactor,MaxSpeedFactor);
+            elseif Dist>rStop && Dist<rSlow
+                if abs(LastDist-Dist)>treshold || state==1
+                    LastDist = Dist;
+                    Speedfactor = min(((Dist-rStop)/(rSlow-rStop))*MaxSpeedFactor,MaxSpeedFactor);
+                    ctrl.rob.stopRobot();
                     ctrl.rob.moveToJointTargetPositions(Path(i,:),Speedfactor);
+                    state=3; disp(['Robot is moved slower to Pose' num2str(i) ' with speedfactor ' num2str(Speedfactor)])
+                    dis.setValues('Speedfactor',Speedfactor);
                 end
-                state=3;
             else
-                if state ~=2
+                if state ~=2 && (abs(LastDist-Dist)>treshold || state==1)
+                    LastDist = Dist;
                     ctrl.rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
-                state=2;
+                    state=2; disp(['Robot is moved normal to Pose' num2str(i)])
+                    dis.setValues('Speedfactor',MaxSpeedFactor);
                 end
             end
+            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state);
+            %toc
         end
     end
 end
+close all
 disp('End of loop reached')
 
 %% States

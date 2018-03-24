@@ -2,7 +2,7 @@
 
 %rosinit('http://192.168.1.110:11311', 'NodeHost', '192.168.1.100') %see what is the port/IP number
 rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.101')
-
+%%
 
 %[armur, msgur]=rosactionclient('/vel_based_pos_traj_controller/follow_joint_trajectory');
 %[armur, msgur]=rosactionclient('/pos_based_pos_traj_controller/follow_joint_trajectory');
@@ -23,13 +23,13 @@ tjPoint1.Velocities = zeros(1,6);
 tjPoint1.TimeFromStart = rosduration(0);
 
 tjPoint2=rosmessage('trajectory_msgs/JointTrajectoryPoint');
-tjPoint2.Positions = [-60*pi/180 -40*pi/180 -60*pi/180 -30*pi/180 -30*pi/180 -30*pi/180]; 
-tjPoint2.Velocities = zeros(1,6);
+tjPoint2.Positions = [20 -90 -90 -180 -90 0].*pi./180; 
+tjPoint2.Velocities = [0.3 0 0 0 0 0];
 tjPoint2.TimeFromStart = rosduration(10.0);
 
 tjPoint3=rosmessage('trajectory_msgs/JointTrajectoryPoint');
-tjPoint3.Positions = [90*pi/180 -140*pi/180 10*pi/180 -120*pi/180 0*pi/180 0*pi/180];
-tjPoint3.Velocities = zeros(1,6);
+tjPoint3.Positions = [40 -90 -90 -180 -90 0].*pi./180;
+tjPoint3.Velocities = [0.1 0 0 0 0 0];
 tjPoint3.TimeFromStart = rosduration(15);
 
 

@@ -178,6 +178,22 @@ classdef ur10core < handle
             
             JointPositions = ang(1:6);
         end
+        function drawRobot(obj)
+            [~,~,T] = obj.ForwKin(obj.getJointPositions);
+            plot3(0,0,0.86,'g','Marker','o','LineWidth',2)
+            
+            P = zeros(7,3);
+            for i=1:7
+                P(i,:) = [T(1,4,i)/1000 T(2,4,i)/1000 T(3,4,i)/1000+0.86];
+                plot3(P(i,1),P(i,2),P(i,3),'g','Marker','o','LineWidth',2)
+            end
+            
+            plot3([0 P(1,1)],[0 P(1,2)],[0.86 P(1,3)],'g')
+            for i=2:7
+                plot3([P(i-1,1) P(i,1)],[P(i-1,2) P(i,2)],[P(i-1,3) P(i,3)],'g')
+            end
+            
+        end
         
     end
     

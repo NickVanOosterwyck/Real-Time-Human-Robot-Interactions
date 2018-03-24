@@ -24,6 +24,10 @@ classdef controller < handle %& kinectcore & ur10core
         end
         
         function [Dist,StartPoint,EndPoint] = getClosestPoint(obj,Reference,varargin)
+        %getClosestPoint calculates the closest distance between the
+        %reference and a point in a pointcloud. The function will get a new
+        %pointcloud if no pointcloud is provided. The reference kan be the
+        %robot base or TCP.
             p = inputParser;
             acceptedInput = {'Base','TCP'};
             p.addRequired('obj');
@@ -35,22 +39,57 @@ classdef controller < handle %& kinectcore & ur10core
             if isempty(p.Results.ptCloudIn)
                 ptCloud = obj.cam.getPointCloud('Filtered');
             else
-                ptCloud = ptCloudIn;
+                ptCloud = p.Results.ptCloudIn;
             end
-            
+            % calculate distance
             if strcmp(p.Results.Reference,'Base')
-                [Dist,EndPoint] = obj.cam.calculateClosestPoint(ptCloud);
                 StartPoint = [0 0 0.988];
+                [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,11,'Sort',true);
+                if ~isempty(indices)&&length(indices)>10
+                    Dist = dists(10);
+                    EndPoint = ptCloud.Location(indices(10),:);
+                else
+                    Dist = inf;
+                    EndPoint = [inf,inf,inf];
+                end
+                
             else
-                [Dist,EndPoint,StartPoint] = obj.calculateClosestPointToTCP(ptCloud);
+                JointPositions = obj.rob.getJointPositions();
+                [StartPoint,~,~] = obj.rob.ForwKin(JointPositions);
+                StartPoint =StartPoint(1:3)./1000;
+                StartPoint(3)=StartPoint(3)+0.86;
+                [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,11,'Sort',true);
+                if ~isempty(indices)&&length(indices)>10
+                    Dist = dists(10);
+                    EndPoint = ptCloud.Location(indices(10),:);
+                else
+                    Dist = inf;
+                    EndPoint = [inf,inf,inf];
+                end
                 
             end
-            
+
         end
-        function showTrackingPlayerToTCP(obj)
-            figure('Name','PointCloud Tracking Player To TCP');
-            title('PointCloud Tracking Player')
+        function showPlayer(obj)
+            player = pcplayer(obj.cam.detectionVol(1:2),obj.cam.detectionVol(3:4),obj.cam.detectionVol(5:6),'MarkerSize',8);
+            while isOpen(player)
+                tic
+                ptCloud = obj.cam.getPointCloud('Filtered');
+                view(player, ptCloud);
+                toc
+            end
+            clc
+        end
+        function showTrackingPlayer(obj,Reference)
+            p = inputParser;
+            acceptedInput = {'Base','TCP'};
+            p.addRequired('obj');
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
+            p.parse(obj,Reference);
+            
+            figure('Name','PointCloud Tracking Player');
             obj.cam.plotPointCloud([Inf Inf Inf]);
+            title('PointCloud Tracking Player')
             hold on
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
@@ -65,15 +104,15 @@ classdef controller < handle %& kinectcore & ur10core
             
             while flag==1
                 tic
-                ptCloud = obj.cam.getFilteredPointCloud();
+                ptCloud = obj.cam.getPointCloud('Filtered');
                 pcshow(ptCloud,'MarkerSize',8)
                 axis(obj.cam.detectionVol)
                 grid on
-                [dist,Point,TCP] = obj.calculateClosestPointToTCP(ptCloud);
+                [dist,StartPoint,EndPoint] = obj.getClosestPoint(p.Results.Reference,ptCloud);
                 if ~isinf(dist)
-                    plot3([TCP(1) Point(1)],[TCP(2) Point(2)],[TCP(3) Point(3)],'r')
-                    plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                    plot3(TCP(1),TCP(2),TCP(3),'r','Marker','o','LineWidth',2)
+                    plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r')
+                    plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
+                    plot3(EndPoint(1),EndPoint(2),EndPoint(3),'r','Marker','o','LineWidth',2)
                     text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
                 else
                     plot3([0 0],[0 0],[0 0])
@@ -83,69 +122,41 @@ classdef controller < handle %& kinectcore & ur10core
                 end
                 drawnow
                 children = get(gca, 'children');
-                delete(children(1));
-                delete(children(2));
-                delete(children(3));
-                delete(children(4));
-                delete(children(5));
+                delete(children(1:5));
                 toc
             end
             close
             clc
             
         end
-        function showProcessedPointCloud(obj)
-            ptCloudFiltered = obj.cam.getFilteredPointCloud();
-            [dist,Point] = obj.cam.calculateClosestPoint(ptCloudFiltered);
+        function showProcessedPointCloud(obj,Reference)
+            p = inputParser;
+            acceptedInput = {'Base','TCP'};
+            p.addRequired('obj');
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
+            p.parse(obj,Reference);
             
-            title('PointCloud Filtered')
-            obj.cam.plotPointCloud(ptCloudFiltered);
+            ptCloud = obj.cam.getPointCloud('Filtered');
+            [dist,StartPoint,EndPoint] = obj.getClosestPoint(p.Results.Reference,ptCloud);
+            
+            title('PointCloud Processed')
+            obj.cam.plotPointCloud(ptCloud);
             hold on
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
-            obj.drawRobot();
+            obj.rob.drawRobot();
+            
             if ~isinf(dist)
-                plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
-                plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                text(Point(1)/2,Point(2)/2,((Point(3)-0.988)/2)+0.988,[' ' num2str(round(dist,2)) ' m'])
+                plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r')
+                plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
+                plot3(EndPoint(1),EndPoint(2),EndPoint(3),'r','Marker','o','LineWidth',2)
+                text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
             else
                 text(0,0,1.3,'No point detected')
             end
             
         end
-        function drawRobot(obj)
-            [~,~,T] = obj.rob.ForwKin(obj.rob.getJointPositions);
-            plot3(0,0,0.86,'g','Marker','o','LineWidth',2)
-            
-            P = zeros(7,3);
-            for i=1:7
-            P(i,:) = [T(1,4,i)/1000 T(2,4,i)/1000 T(3,4,i)/1000+0.86];
-            plot3(P(i,1),P(i,2),P(i,3),'g','Marker','o','LineWidth',2)
-            end
-            
-            plot3([0 P(1,1)],[0 P(1,2)],[0.86 P(1,3)],'g')
-            for i=2:7
-                plot3([P(i-1,1) P(i,1)],[P(i-1,2) P(i,2)],[P(i-1,3) P(i,3)],'g')
-            end
-            
-        end
         
-        function [Dist,Point,TCP] = calculateClosestPointToTCP(obj,ptCloud)
-            JointPositions = obj.rob.getJointPositions();
-            [TCP,~,~] = obj.rob.ForwKin(JointPositions);
-            TCP =TCP(1:3)./1000;
-            TCP(3)=TCP(3)+0.86;
-            [indices, dists] = findNearestNeighbors(ptCloud,TCP,11,'Sort',true);
-            if ~isempty(indices)&&length(indices)>10
-                Dist = dists(10);
-                Point = ptCloud.Location(indices(10),:);
-            else
-                Dist = inf;
-                Point = [inf,inf,inf];
-            end
-            
-        end
-
     end
 end
 

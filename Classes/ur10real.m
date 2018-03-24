@@ -3,7 +3,7 @@ classdef ur10real < handle
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
-        jpub5   % ???
+        jsub   % ???
         armur   % ???
         msgur   % ???
     end
@@ -21,12 +21,12 @@ classdef ur10real < handle
             %[armur, msgur]=rosactionclient('/pos_based_pos_traj_controller/follow_joint_trajectory');
             [obj.armur, obj.msgur]=rosactionclient('/follow_joint_trajectory');
             
-            obj.jpub5=rossubscriber('/joint_states');
+            obj.jsub=rossubscriber('/joint_states');
             pause(1)
             obj.msgur.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
         end
         function [JointPositions] = getJointPositionsDif(obj)
-            JointPositions_rad = obj.jpub5.LatestMessage.Position.';
+            JointPositions_rad = obj.jsub.LatestMessage.Position.';
             JointPositions=JointPositions_rad/pi*180;
             %JointPositions_rad(1) = obj.jpub5.LatestMessage.Position(3);
             %JointPositions_rad(3) = obj.jpub5.LatestMessage.Position(1);

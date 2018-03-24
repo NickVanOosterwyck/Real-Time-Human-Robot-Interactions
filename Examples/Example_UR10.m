@@ -17,7 +17,7 @@ rob.goHome(0.5);
 rob.moveToJointTargetPositions([-25 -125 -100 -135 -25 0],0.5);
 
 %% Go to TCP position
-rob.moveToTCPTargetPositions([400 -400 400 90 0 0],0.5);
+rob.moveToTCPTargetPositions([400 -400 600 90 0 0],0.5);
 
 %% Show TCP coordinates
 rob.TCPTargetPositions()

@@ -5,22 +5,26 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-cam = 'vrep';
-%cam = 'real';  % choose camera
+% cam = 'vrep';
+cam = 'real';  % choose camera
 
-rob = 'vrep';
-%rob = 'real';  % choose ur10
+% rob = 'vrep';
+rob = 'real';  % choose ur10
 
 ctrl = controller(cam,rob);
 ctrl.connect();
 
 %% Show Processed PointCloud
-ctrl.showProcessedPointCloud();
+pause(2)
+ctrl.showProcessedPointCloud('TCP');
+%ctrl.showProcessedPointCloud('Base');
 
 %% Show Player
-ctrl.showTrackingPlayerToTCP();
+%ctrl.showPlayer(); %faster, but without tracking
+ctrl.showTrackingPlayer('TCP');
+%ctrl.showTrackingPlayer('Base');
 
 %% Calculate closest distance
-ptCloud = ctrl.cam.getFilteredPointCloud();
-[Dist1,Start1,End1] = ctrl.calculateClosestPoint(ptCloud,'Base');
-[Dist2,Start2,End2] = ctrl.calculateClosestPoint(ptCloud,'TCP');
+ptCloud = ctrl.cam.getPointCloud('Filtered');
+[Dist,Start,End] = ctrl.getClosestPoint(ptCloud,'Base');
+%[Dist,Start,End] = ctrl.calculateClosestPoint(ptCloud,'TCP');
