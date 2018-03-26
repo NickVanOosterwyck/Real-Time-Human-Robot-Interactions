@@ -9,7 +9,7 @@ classdef ur10core < handle
         homeJointTargetPositions;   % Joint positions of home pose in degree
         JointTargetPositions        % Joint target postions in degree
         TCPTargetPositions          % Position of TCP [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
-        MaxJointSpeedFactor         % Limiting factor of the joint speeds
+        MaxSpeedFactor              % Limiting factor of the joint speeds
     end
     
     methods
@@ -26,7 +26,7 @@ classdef ur10core < handle
             obj.homeJointTargetPositions = [0 -90 -90 -180 -90 0];
             obj.JointTargetPositions = zeros(1,6);
             obj.TCPTargetPositions = zeros(1,6);
-            obj.MaxJointSpeedFactor = 0.01;
+            obj.MaxSpeedFactor = 1;
             obj.TCPoffset = 0;
             obj.DH.JointOffset = [128 0 0 164 116 92 obj.TCPoffset];
             obj.DH.LinkLength = [0 -612 -572 0 0 0 0];
@@ -54,11 +54,11 @@ classdef ur10core < handle
                     'Values are outside range.')
             end
         end
-        function set.MaxJointSpeedFactor(obj,Speed)
+        function set.MaxSpeedFactor(obj,Speed)
             if isnumeric(Speed) && Speed<=1 && Speed>=0
-                obj.MaxJointSpeedFactor = Speed;
+                obj.MaxSpeedFactor = Speed;
             else
-                error('Invalid MaxJointSpeedFactor!\n%s',...
+                error('Invalid MaxSpeedFactor!\n%s',...
                     'Use values between 0 and 1.')
             end
         end
@@ -67,7 +67,7 @@ classdef ur10core < handle
         end
         
         function connect(obj)
-            obj.rob.connectDif();
+            obj.rob.connect();
             [~] = obj.getJointPositions();
             pause(0.1)
             startPositions = obj.getJointPositions(); %2nd call because of streaming operation mode in VREP
@@ -75,27 +75,90 @@ classdef ur10core < handle
             [obj.TCPTargetPositions,~,~]=obj.ForwKin(startPositions);
         end
         function [JointPositions] = getJointPositions(obj)
-            JointPositions=obj.rob.getJointPositionsDif();
+            JointPositions_rad=obj.rob.get_actual_joint_positions();
+            JointPositions=JointPositions_rad/pi*180;
         end
+        function movej(obj,q,a,v,t,r,varargin)
+            p=inputParser;
+            acceptedInput = {'Joint','World'};
+            p.addRequired('obj');
+            p.addRequired('q');
+            p.addRequired('a');
+            p.addRequired('v');
+            p.addRequired('t');
+            p.addRequired('r');
+            p.addOptional('CS','Joint',@(x) any(validatestring(x,acceptedInput))); %coordinate system
+            p.parse(obj,q,a,v,t,r,varargin{:});
+            
+            if p.Results.CS =='World'
+                q=obj.InvKin(q);
+            end
+            obj.JointTargetPositions=q;
+            q=q/180*pi;
+            obj.rob.movej(q,a,v,t,r)
+        end
+        function movel(obj,q,a,v,t,r,varargin)
+            p=inputParser;
+            acceptedInput = {'Joint','World'};
+            p.addRequired('obj');
+            p.addRequired('q');
+            p.addRequired('a');
+            p.addRequired('v');
+            p.addRequired('t');
+            p.addRequired('r');
+            p.addOptional('CS','Joint',@(x) any(validatestring(x,acceptedInput))); %coordinate system
+            p.parse(obj,q,a,v,t,r,varargin{:});
+            
+            if p.Results.CS =='World'
+                q=obj.InvKin(q);
+            end
+            q=q/180*pi;
+            if isa(obj.rob,'ur10vrep')
+                obj.rob.movej(q,a,v,t,r) %movel is not supported in VREP
+            else
+                obj.rob.movel(q,a,v,t,r)
+            end
+        end
+        function stopj(obj,a)
+            obj.rob.stopj(a);
+        end
+        function goHome(obj,varargin)
+            p=inputParser;
+            p.addRequired('obj');
+            p.addOptional('Wait',false,@islogical);
+            p.parse(obj,varargin{:});
+            
+            obj.setSpeedFactor(0.1)
+            obj.movej(obj.homeJointTargetPositions,0.5,0.1,0,0);
+            if p.Results.Wait
+                while ~obj.checkPoseReached(obj.homeJointTargetPositions,0.1)
+                end
+            end
+        end
+            
+
+        function setSpeedFactor(obj,SpeedFactor)
+            obj.MaxSpeedFactor = SpeedFactor;
+            obj.rob.setSpeedFactor(SpeedFactor);
+        end
+        %{
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
             obj.JointTargetPositions=JointTargetPositions;
             obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
             if isequal(JointTargetPositions,obj.JointTargetPositions)
                 JointTargetPositions = JointTargetPositions+0.1;
             end
-            obj.rob.moveToJointTargetPositionsDif(JointTargetPositions,MaxJointSpeedFactor);
+            obj.rob.moveToJointTargetPositions(JointTargetPositions,MaxJointSpeedFactor);
         end
         function moveToTCPTargetPositions(obj,TCPTargetPositions,MaxJointSpeedFactor)
             JointPositions = obj.InvKin(TCPTargetPositions);
             obj.moveToJointTargetPositions(JointPositions,MaxJointSpeedFactor);
         end
-        function goHome(obj,MaxJointSpeedFactor)
-            obj.moveToJointTargetPositions(obj.homeJointTargetPositions,MaxJointSpeedFactor);
-        end
         function stopRobot(obj)
             [~] = obj.getJointPositions(); %because of streaming mode in VREP
             obj.moveToJointTargetPositions(obj.getJointPositions(),0.1); %value needs to be tested
         end
+        %}
         function [flag] = checkPoseReached(obj,JointTargetPositions,range)
             Positions = obj.getJointPositions();
             if max(abs(Positions-JointTargetPositions))< range

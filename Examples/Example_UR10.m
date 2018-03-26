@@ -11,13 +11,18 @@ rob=ur10core(RobotType);
 rob.connect();
 
 %% Go home
-rob.goHome(0.5);
+rob.goHome();
+rob.goHome(true); %return when robot is at pose
 
-%% Go to joint position
-rob.moveToJointTargetPositions([-25 -125 -100 -135 -25 0],0.5);
+%% Movej
+a=1.4; v=0.5; t=0; r=0;
+rob.movej([45 -110 -80 -170 -135 0],a,v,t,r);       % with joint angles
+rob.movej([500,-500,500,0,90,90],a,v,t,r,'World');  % in base coordinates
+rob.movej([45 -110 -80 -170 -135 0],a,v,5,r);       % with specified time
 
-%% Go to TCP position
-rob.moveToTCPTargetPositions([400 -400 600 90 0 0],0.5);
+%% Movel
+a=1.4; v=0.5; t=0; r=0;
+ctrl.rob.movel([45 -110 -80 -170 -135 0],a,v,t,r); % not supported in vrep
 
 %% Show TCP coordinates
 rob.TCPTargetPositions()

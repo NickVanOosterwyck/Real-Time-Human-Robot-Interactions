@@ -89,9 +89,7 @@ classdef controlDisplay < handle
                 elseif p.Results.State == 1
                     text = 'Next Target';
                 elseif p.Results.State == 2
-                    text = 'Move Normal';
-                else
-                    text = 'Move Slow';
+                    text = 'Moving';
                 end
                 obj.hState.String = num2str(text);
             end
