@@ -6,7 +6,7 @@ classdef ur10real < handle
         jsub        % subscriber to joint states
         scriptpub   % publisher to URscript
         client      % rosactionclient to /follow_joint_trajectory 
-        msgclient   % message of rosactionclient to /follow_joint_trajectory 
+        clientmsg   % message of rosactionclient to /follow_joint_trajectory 
     end
     
     methods
@@ -17,15 +17,15 @@ classdef ur10real < handle
             rosshutdown
             %rosinit('http://192.168.1.110:11311', 'NodeHost', '192.168.1.100') %see what is the port/IP number
             rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.16')
-                        
+            
             %[obj.client, obj.msgclient]=rosactionclient('/vel_based_pos_traj_controller/follow_joint_trajectory');
             %[obj.client, obj.msgclient=rosactionclient('/pos_based_pos_traj_controller/follow_joint_trajectory');
-            [obj.client, obj.msgclient]=rosactionclient('/follow_joint_trajectory');
+            [obj.client, obj.clientmsg]=rosactionclient('/follow_joint_trajectory');
             
             obj.jsub=rossubscriber('/joint_states');
-            obj.scriptpub= rospublisher('/ur_driver/URScript');
+            obj.scriptpub= rospublisher('/ur_driver/URScript','std_msgs/String');
             pause(1)
-            obj.msgclient.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
+            obj.clientmsg.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
         end
         function [JointPositions] = get_actual_joint_positions(obj)
             JointPositions = obj.jsub.LatestMessage.Position.';

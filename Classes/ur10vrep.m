@@ -73,9 +73,10 @@ classdef ur10vrep < handle
         end
         function setSpeedFactor(obj,SpeedFactor)
             obj.MaxSpeedFactor = SpeedFactor;
+            Velocities = max(obj.JointVelocities*obj.MaxSpeedFactor,0.01);
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
             for i=1:6
-                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),obj.JointVelocities(i)*obj.MaxSpeedFactor,obj.vrep.simx_opmode_streaming);
+                [~]=obj.vrep.simxSetJointTargetVelocity(obj.clientID,obj.JointHandles(i),Velocities(i),obj.vrep.simx_opmode_streaming);
             end
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
  

@@ -3,7 +3,7 @@ classdef ur10core < handle
     %   Detailed explanation goes here
     
     properties (SetAccess = protected)
-        rob                         % selected ur10 class
+        rob                         % Selected ur10 class
         DH                          % Denavit-Hartenberg parameters
         TCPoffset                   % Distance between TCP and robot end
         homeJointTargetPositions;   % Joint positions of home pose in degree

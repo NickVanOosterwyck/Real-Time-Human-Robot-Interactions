@@ -1,18 +1,9 @@
-Dist = 20;
-LastDist = 8;
-PoseNr = 3;
+sub=rossubscriber('/ur_driver/URScript');
 
-f = figure('Visible','off');
-ax = axes('Units','pixels','Visible','off');
-txt = uicontrol('Style','text',...
-    'Position',[50 300 200 20],...
-    'HorizontalAlignment','left',...
-    'String',['Current Distance = ' num2str(Dist) ' m']);
-txt2 = uicontrol('Style','text',...
-    'Position',[150 300 120 20],...
-    'String',['Current Distance = ' num2str(Dist) ' m']);
-f.Visible = 'on';
+a=1.4; v=0.2; t=0; r=0;
+q =[45 -110 -80 -170 -135 0];
 
-pause(2)
-txt.String = 'test';
-drawnow
+msg=rosmessage('std_msgs/String');
+q_str = ['[' num2str(q(1)) ',' num2str(q(2)) ',' num2str(q(3)) ',' num2str(q(4)) ',' num2str(q(5)) ',' num2str(q(6)) ']'];
+msg.Data = ['movej(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')\n'];
+send(scriptpub,msg);
