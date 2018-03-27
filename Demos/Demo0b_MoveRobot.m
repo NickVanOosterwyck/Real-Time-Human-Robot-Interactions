@@ -46,7 +46,7 @@ for it = 1:iterations
         state = 1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             if  state ==1
-                ctrl.rob.movej(Path(i,:),a,v,t,r);
+                ctrl.rob.movel(Path(i,:),a,v,t,r);
                 state = 2;
             end
         end

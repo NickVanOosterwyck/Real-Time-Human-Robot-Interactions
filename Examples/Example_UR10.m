@@ -22,7 +22,7 @@ rob.movej([0 -90 -90 -180 -90 0],a,v,5,r);       % with specified time
 
 %% Movel
 a=1.4; v=0.1; t=0; r=0;
-rob.movel([500,-400,800,0,90,90],a,v,t,r,'World'); % not supported in vrep
+ctrl.rob.movel([500,-400,800,0,90,90],a,v,t,r,'World'); % not supported in vrep
 
 %% Stopj
 rob.stopj(1.5);

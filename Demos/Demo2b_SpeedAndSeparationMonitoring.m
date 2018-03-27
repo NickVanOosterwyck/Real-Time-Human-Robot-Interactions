@@ -26,8 +26,8 @@ PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 1;
-rSlow = 1.7;
+rStop = 0.5;
+rSlow = 1.5;
 
 %% Go home
 ctrl.rob.goHome(true);
@@ -38,7 +38,7 @@ MaxSpeedFactor = 1;
 Range = 0.05;
 treshold = 0.1;
 iterations = 1;
-Ref = 'Base'; % choose TCP or Base
+Ref = 'TCP'; % choose TCP or Base
 a=0.5; v=0.1; t=0; r=0;
 
 ctrl.rob.setSpeedFactor(MaxSpeedFactor);
@@ -63,7 +63,7 @@ for it = 1:iterations
                 end
             else
                 if state ~=2 && abs(LastDist-Dist)>treshold || state==1
-                    ctrl.rob.movej(Path(i,:),a,v,t,r);
+                    ctrl.rob.movel(Path(i,:),a,v,t,r);
                     rob2.movej(Path(i,:),a,v,t,r);
                     state=2; disp(['Target' num2str(i)])
                 end

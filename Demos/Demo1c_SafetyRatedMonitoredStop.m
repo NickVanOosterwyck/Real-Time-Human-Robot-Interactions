@@ -5,7 +5,7 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Create & Connect
-CameraType = 'vrep';    % vrep or real
+CameraType = 'real';    % vrep or real
 RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
@@ -35,10 +35,10 @@ disp('Robot is ready in home pose.')
 %% Demo 1: Safety Rated Monitored Stop
 MaxSpeedFactor = 1;
 Range = 0.05;
-h_treshold = 1.8;
+h_treshold = 1.9;
 treshold = 0.1;
 iterations = 1;
-Ref = 'Base'; % choose TCP or Base
+Ref = 'TCP'; % choose TCP or Base
 a=0.5; v=0.1; t=0; r=0;
 
 ctrl.rob.setSpeedFactor(MaxSpeedFactor);
@@ -76,7 +76,7 @@ for it = 1:iterations
             else
                 if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1 || state ==3) 
                     LastDist = Dist;
-                    ctrl.rob.movej(Path(i,:),a,v,t,r);
+                    ctrl.rob.movel(Path(i,:),a,v,t,r);
                     rob2.movej(Path(i,:),a,v,t,r);
                     state = 2; disp(['Target' num2str(i)])
                 end

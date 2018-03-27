@@ -63,7 +63,7 @@ for it = 1:iterations
             else
                 if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1)
                     LastDist = Dist;
-                    ctrl.rob.movej(Path(i,:),a,v,t,r);
+                    ctrl.rob.movel(Path(i,:),a,v,t,r);
                     rob2.movej(Path(i,:),a,v,t,r);
                     state = 2; disp(['Target' num2str(i)])
                 end
