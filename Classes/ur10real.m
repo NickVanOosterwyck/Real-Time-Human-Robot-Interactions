@@ -15,7 +15,6 @@ classdef ur10real < handle
         
         function connect(obj)
             rosshutdown
-            %rosinit('http://192.168.1.110:11311', 'NodeHost', '192.168.1.100') %see what is the port/IP number
             rosinit('http://192.168.1.100:11311', 'NodeHost', '192.168.1.16')
             
             %[obj.client, obj.msgclient]=rosactionclient('/vel_based_pos_traj_controller/follow_joint_trajectory');
@@ -33,30 +32,24 @@ classdef ur10real < handle
         function movej(obj,q,a,v,t,r)
             msg=rosmessage('std_msgs/String');
             q_str = ['[' num2str(q(1)) ',' num2str(q(2)) ',' num2str(q(3)) ',' num2str(q(4)) ',' num2str(q(5)) ',' num2str(q(6)) ']'];
-            msg.Data = ['movej(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')\n'];
+            msg.Data = ['movej(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')'];
             send(obj.scriptpub,msg); 
         end
         function movel(obj,q,a,v,t,r)
             msg=rosmessage('std_msgs/String');
             q_str = ['[' num2str(q(1)) ',' num2str(q(2)) ',' num2str(q(3)) ',' num2str(q(4)) ',' num2str(q(5)) ',' num2str(q(6)) ']'];
-            msg.Data = ['movej(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')\n'];
+            msg.Data = ['movel(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')'];
             send(obj.scriptpub,msg);
         end
         function stopj(obj,a)
             msg=rosmessage('std_msgs/String');
-            msg.Data = ['stopj(' num2str(a) ')\n'];
+            msg.Data = ['stopj(' num2str(a) ')'];
             send(obj.scriptpub,msg);
         end
         function setSpeedFactor(obj,SpeedFactor)
-            msg1=rosmessage('std_msgs/String');
-            msg2=rosmessage('std_msgs/String');
-            msg3=rosmessage('std_msgs/String');
-            msg1.Data = 'set speed\n';
-            msg2.Data = [num2str(SpeedFactor) '\n'];
-            msg3.Data = '10\n';
-            send(obj.scriptpub,msg1);
-            send(obj.scriptpub,msg2);
-            send(obj.scriptpub,msg3);
+            msg=rosmessage('std_msgs/String');
+            msg.Data = ['set speed' num2str(SpeedFactor)];
+            send(obj.scriptpub,msg);
         end
         %{
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)

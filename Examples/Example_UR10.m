@@ -15,14 +15,20 @@ rob.goHome();
 rob.goHome(true); %return when robot is at pose
 
 %% Movej
-a=1.4; v=0.5; t=0; r=0;
-rob.movej([45 -110 -80 -170 -135 0],a,v,t,r);       % with joint angles
-rob.movej([500,-500,500,0,90,90],a,v,t,r,'World');  % in base coordinates
-rob.movej([45 -110 -80 -170 -135 0],a,v,5,r);       % with specified time
+a=1.4; v=0.1; t=0; r=0;
+rob.movej([0 -90 -90 -180 -90 0],a,v,t,r);       % with joint angles
+rob.movej([500,-400,800,0,90,90],a,v,t,r,'World');  % in base coordinates
+rob.movej([0 -90 -90 -180 -90 0],a,v,5,r);       % with specified time
 
 %% Movel
-a=1.4; v=0.5; t=0; r=0;
-ctrl.rob.movel([45 -110 -80 -170 -135 0],a,v,t,r); % not supported in vrep
+a=1.4; v=0.1; t=0; r=0;
+rob.movel([500,-400,800,0,90,90],a,v,t,r,'World'); % not supported in vrep
+
+%% Stopj
+rob.stopj(1.5);
+
+%% Set speed
+rob.setSpeedFactor(1);
 
 %% Show TCP coordinates
 rob.TCPTargetPositions()

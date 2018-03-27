@@ -9,6 +9,7 @@ classdef controlDisplay < handle
         hSpeedfactor
         hTargetPose
         hState
+        hHeight
     end
     
     methods
@@ -36,6 +37,8 @@ classdef controlDisplay < handle
                 'HorizontalAlignment','left','String','TargetPose:');
             uicontrol('Style','text','Position',[xDes 200 wDes 20],...
                 'HorizontalAlignment','left','String','State:');
+            uicontrol('Style','text','Position',[xDes 180 wDes 20],...
+                'HorizontalAlignment','left','String','Height:');
             % values
             obj.hReference =uicontrol('Style','text','Position',[xVal 300 wVal 20],...
                 'HorizontalAlignment','left','String','');
@@ -49,10 +52,14 @@ classdef controlDisplay < handle
                 'HorizontalAlignment','left','String','');
             obj.hState=uicontrol('Style','text','Position',[xVal 200 150 20],...
                 'HorizontalAlignment','left','String','');
+            obj.hHeight=uicontrol('Style','text','Position',[xVal 180 wVal 20],...
+                'HorizontalAlignment','left','String','');
             % units
             uicontrol('Style','text','Position',[xUni 280 wUni 20],...
                 'HorizontalAlignment','left','String','m');
             uicontrol('Style','text','Position',[xUni 260 wUni 20],...
+                'HorizontalAlignment','left','String','m');
+            uicontrol('Style','text','Position',[xUni 180 wUni 20],...
                 'HorizontalAlignment','left','String','m');
             
             f.Visible = 'on';
@@ -66,6 +73,7 @@ classdef controlDisplay < handle
             p.addParameter('Speedfactor','');
             p.addParameter('TargetPose','');
             p.addParameter('State','');
+            p.addParameter('Height','');
             p.parse(obj,varargin{:});
             
             if ~strcmp('',p.Results.Reference)
@@ -90,8 +98,13 @@ classdef controlDisplay < handle
                     text = 'Next Target';
                 elseif p.Results.State == 2
                     text = 'Moving';
+                elseif p.Results.State == 3
+                    text = 'Stopped (h)';
                 end
                 obj.hState.String = num2str(text);
+            end
+            if ~strcmp('',p.Results.Height)
+                obj.hHeight.String = num2str(p.Results.Height);
             end
             drawnow
         end

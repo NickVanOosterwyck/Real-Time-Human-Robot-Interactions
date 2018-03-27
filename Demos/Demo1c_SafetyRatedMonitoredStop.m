@@ -5,11 +5,12 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Create & Connect
-CameraType = 'real';    % vrep or real
+CameraType = 'vrep';    % vrep or real
 RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
+
 %% Set up
 %-- move camera
 %ctrl.cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
@@ -28,18 +29,20 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 rStop = 1;
 
 %% Go home
-ctrl.rob.goHome(0.1);
-while ~ctrl.rob.checkPoseReached(ctrl.rob.homeJointTargetPositions,0.2)
-end
+ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
-%% Cycle
-MaxSpeedFactor = 0.2;
-Range = 0.2;
-treshold = 0.25;
+%% Demo 1: Safety Rated Monitored Stop
+MaxSpeedFactor = 1;
+Range = 0.05;
+h_treshold = 1.8;
+treshold = 0.1;
 iterations = 1;
-Ref = 'TCP'; % choose TCP or Base
+Ref = 'Base'; % choose TCP or Base
+a=0.5; v=0.1; t=0; r=0;
 
+ctrl.rob.setSpeedFactor(MaxSpeedFactor);
+rob2.setSpeedFactor(MaxSpeedFactor);
 state = 0;
 LastDist=Inf;
 dis = controlDisplay();
@@ -50,31 +53,39 @@ for it = 1:iterations
         state = 1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             %tic
-            [Dist,~,~] = ctrl.getClosestPoint(Ref);
+            ptCloud=ctrl.cam.getPointCloud('Filtered');
+            if ptCloud.Count ~=0
+                h = ptCloud.ZLimits(2);
+            else
+                h=0;
+            end
+            [Dist,~,~] = ctrl.getClosestPoint(Ref,ptCloud);
             if Dist < rStop
                 if state ~=0 && abs(LastDist-Dist)>treshold
                     LastDist = Dist;
-                    ctrl.rob.stopRobot();
-                    state = 0; disp('Robot is stopped')
+                    ctrl.rob.stopj(a);
+                    rob2.stopj(a);
+                    state = 0; disp('Robot is stopped(distance)')
+                end
+            elseif Dist > rStop && h>h_treshold
+                if state~=3
+                    ctrl.rob.stopj(a);
+                    rob2.stopj(a);
+                    state = 3; disp('Robot is stopped (height)')
                 end
             else
-                if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1)
+                if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1 || state ==3) 
                     LastDist = Dist;
-                    ctrl.rob.moveToJointTargetPositions(Path(i,:),MaxSpeedFactor);
-                    state = 2; disp(['Robot is moved to Pose' num2str(i)])
+                    ctrl.rob.movej(Path(i,:),a,v,t,r);
+                    rob2.movej(Path(i,:),a,v,t,r);
+                    state = 2; disp(['Target' num2str(i)])
                 end
             end
-            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state);
+            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state,'Height',h);
             %toc
         end
     end
 end
 close all
 disp('End of loop reached')
-
-%% States
-% 0	Stop
-% 1	Next Target
-% 2	Move normal
-% 3	Move slow
 

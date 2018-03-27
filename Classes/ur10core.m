@@ -128,7 +128,7 @@ classdef ur10core < handle
             p.addOptional('Wait',false,@islogical);
             p.parse(obj,varargin{:});
             
-            obj.setSpeedFactor(0.1)
+            obj.setSpeedFactor(1)
             obj.movej(obj.homeJointTargetPositions,0.5,0.1,0,0);
             if p.Results.Wait
                 while ~obj.checkPoseReached(obj.homeJointTargetPositions,0.1)
@@ -140,6 +140,7 @@ classdef ur10core < handle
         function setSpeedFactor(obj,SpeedFactor)
             obj.MaxSpeedFactor = SpeedFactor;
             obj.rob.setSpeedFactor(SpeedFactor);
+            pause(0.1)
         end
         %{
         function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
