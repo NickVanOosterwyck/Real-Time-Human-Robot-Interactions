@@ -9,7 +9,9 @@ classdef GUI < handle
         fig
         axC
         axD
+        pD
         axS
+        pS
     end
     properties (Hidden = true)
         hReference
@@ -90,12 +92,17 @@ classdef GUI < handle
             
             if p.Results.LiveGraphDist
                 obj.axD = subplot(2,3,[2 3]);
+                obj.pD=plot(obj.axD,obj.aTime,obj.aDist);
                 obj.axD.YLimMode= 'manual';
+                obj.axD.YLim= [0 2.5];
+                
             end
             
             if p.Results.LiveGraphSpeed
                 obj.axS = subplot(2,3,[5 6]);
+                obj.pS=plot(obj.axS,obj.aTime,obj.aSpeed);
                 obj.axS.YLimMode= 'manual';
+                obj.axS.YLim= [0 1.05];
             end
         end
         function setValues(obj,varargin)
@@ -146,15 +153,15 @@ classdef GUI < handle
                 obj.aTime(length(obj.aTime)+1)=p.Results.Time;
                 if ~strcmp('',p.Results.Dist)
                     obj.aDist(length(obj.aDist)+1)=p.Results.Dist;
-                    plot(obj.axD,obj.aTime,obj.aDist)
+                    obj.pD.XData = obj.aTime;
+                    obj.pD.YData = obj.aDist;
                     obj.axD.XLim= [max(obj.aTime(end)-obj.tDisp,0) max(obj.aTime(end),obj.tDisp)];
-                    obj.axD.YLim= [0 2.5];
                 end
                 if ~strcmp('',p.Results.Speedfactor)
                     obj.aSpeed(length(obj.aSpeed)+1)=p.Results.Speedfactor;
-                    plot(obj.axS,obj.aTime,obj.aSpeed)
+                    obj.pS.XData = obj.aTime;
+                    obj.pS.YData = obj.aSpeed;
                     obj.axS.XLim= [max(obj.aTime(end)-obj.tDisp,0) max(obj.aTime(end),obj.tDisp)];
-                    obj.axS.YLim= [0 1.05];
                 end
             end
             
