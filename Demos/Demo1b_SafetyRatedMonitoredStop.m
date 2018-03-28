@@ -37,39 +37,40 @@ MaxSpeedFactor = 1;
 Range = 0.05;
 treshold = 0.1;
 iterations = 1;
-Ref = 'Base'; % choose TCP or Base
+Ref = 'TCP'; % choose TCP or Base
 a=0.5; v=0.1; t=0; r=0;
 
 ctrl.rob.setSpeedFactor(MaxSpeedFactor);
-rob2.setSpeedFactor(MaxSpeedFactor);
+%rob2.setSpeedFactor(MaxSpeedFactor);
 state = 0;
 LastDist=Inf;
-dis = controlDisplay();
+dis = GUI('ControlPanel',true,'LiveGraphDist',true);
 dis.setValues('Reference',Ref,'SpeedFactor',MaxSpeedFactor);
+tic
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state = 1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
-            %tic
             [Dist,~,~] = ctrl.getClosestPoint(Ref);
             if Dist < rStop
                 if state ~=0 && abs(LastDist-Dist)>treshold
                     LastDist = Dist;
                     ctrl.rob.stopj(a);
-                    rob2.stopj(a);
+                    %rob2.stopj(a);
                     state = 0; disp('Robot is stopped')
                 end
             else
                 if  state ~=2 && (abs(LastDist-Dist)>treshold || state==1)
                     LastDist = Dist;
                     ctrl.rob.movel(Path(i,:),a,v,t,r);
-                    rob2.movej(Path(i,:),a,v,t,r);
+                    %rob2.movej(Path(i,:),a,v,t,r);
                     state = 2; disp(['Target' num2str(i)])
                 end
             end
-            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state);
-            %toc
+            t=toc;
+            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,...
+                'State',state,'Time',t);
         end
     end
 end

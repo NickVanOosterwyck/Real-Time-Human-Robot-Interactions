@@ -12,7 +12,6 @@ ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
 %% Show Processed PointCloud
-pause(5)
 ctrl.showProcessedPointCloud('TCP'); % TCP or Base
 
 %% Show Player

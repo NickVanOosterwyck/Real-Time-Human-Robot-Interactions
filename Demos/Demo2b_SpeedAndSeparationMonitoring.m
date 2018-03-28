@@ -5,7 +5,7 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Create & Connect
-CameraType = 'vrep';    % vrep or real
+CameraType = 'real';    % vrep or real
 RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
@@ -45,26 +45,26 @@ ctrl.rob.setSpeedFactor(MaxSpeedFactor);
 state = 0;
 LastDist=Inf;
 SpeedFactor = 0;
-dis = controlDisplay();
+dis = GUI('ControlPanel',true,'LiveGraphDist',true,'LiveGraphSpeed',true);
 dis.setValues('Reference',Ref);
+tic
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         state=1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
-            %tic
             [Dist,~,~] = ctrl.getClosestPoint(Ref);
             if  Dist<rStop
                 if state ~=0 && abs(LastDist-Dist)>treshold
                     LastDist = Dist;
                     ctrl.rob.stopj(a);
-                    rob2.stopj(a);
+                    %rob2.stopj(a);
                     state=0; disp('Robot is stopped')
                 end
             else
                 if state ~=2 && abs(LastDist-Dist)>treshold || state==1
                     ctrl.rob.movel(Path(i,:),a,v,t,r);
-                    rob2.movej(Path(i,:),a,v,t,r);
+                    %rob2.movej(Path(i,:),a,v,t,r);
                     state=2; disp(['Target' num2str(i)])
                 end
             end
@@ -81,9 +81,16 @@ for it = 1:iterations
                     SpeedFactor = MaxSpeedFactor;
                     ctrl.rob.setSpeedFactor(SpeedFactor);
                 end
+            else
+                if SpeedFactor~=0
+                    LastDist = Dist;
+                    SpeedFactor = 0;
+                    ctrl.rob.setSpeedFactor(SpeedFactor);
+                end
             end
-            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,'State',state,'Speedfactor',SpeedFactor);
-            %toc
+            t=toc;
+            dis.setValues('Dist',Dist,'LastDist',LastDist,'TargetPose',i,...
+                'State',state,'Speedfactor',SpeedFactor,'Time',t);
         end
     end
 end

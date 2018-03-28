@@ -4,6 +4,7 @@ classdef ur10real < handle
     
     properties (SetAccess = protected)
         jsub        % subscriber to joint states
+        TCPsub      % subscriber to TCP velocity
         scriptpub   % publisher to URscript
         client      % rosactionclient to /follow_joint_trajectory 
         clientmsg   % message of rosactionclient to /follow_joint_trajectory 
@@ -22,12 +23,21 @@ classdef ur10real < handle
             [obj.client, obj.clientmsg]=rosactionclient('/follow_joint_trajectory');
             
             obj.jsub=rossubscriber('/joint_states');
+            obj.TCPsub= rossubscriber('/tool_velocity');
             obj.scriptpub= rospublisher('/ur_driver/URScript','std_msgs/String');
             pause(1)
             obj.clientmsg.Trajectory.JointNames={'shoulder_pan_joint', 'shoulder_lift_joint','elbow_joint','wrist_1_joint','wrist_2_joint','wrist_3_joint'}';
         end
         function [JointPositions] = get_actual_joint_positions(obj)
             JointPositions = obj.jsub.LatestMessage.Position.';
+        end
+        function [Velocities] = get_actual_tcp_speed(obj)
+            % only lineair speed
+            vx = obj.TCPsub.LatestMessage.Twist.Linear.X;
+            vy = obj.TCPsub.LatestMessage.Twist.Linear.Y;
+            vz = obj.TCPsub.LatestMessage.Twist.Linear.Z;
+            Velocities = [vx,vy,vz]; 
+            
         end
         function movej(obj,q,a,v,t,r)
             msg=rosmessage('std_msgs/String');
