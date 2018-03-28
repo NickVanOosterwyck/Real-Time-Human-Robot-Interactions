@@ -30,6 +30,8 @@ rob.stopj(1.5);
 %% Set speed
 rob.setSpeedFactor(1);
 
-%% Show TCP coordinates
+%% Show
 rob.TCPTargetPositions()
+rob.getTCPSpeed()
+rob.getJointPositions()
 
