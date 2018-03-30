@@ -7,7 +7,7 @@ cam = Kinect;
 cam.Open('body');
 %%
 
-for k = 1: 100 % 100 frames record
+for k = 1: 50 % 100 frames record
     
     [depth,color] = cam.GetFrame(TofFrameType.DEPTH_IMAGE,TofFrameType.RGB_IMAGE);
     [bodies, fcp, timeStamp] = cam.CameraProtocol.CameraSettings.getBodies('Euler'); %'Quat': 4x25 matrix containing the  orientation of each joint in [x; y; z, w] (quaternions representation of angles)
@@ -25,11 +25,11 @@ for k = 1: 100 % 100 frames record
     if numBodies > 0
         
         
-        disp('Floor Clip Plane')
-        disp(fcp);
-        
-        disp('Body Timestamp')
-        disp(timeStamp);
+%         disp('Floor Clip Plane')
+%         disp(fcp);
+%         
+%         disp('Body Timestamp')
+%         disp(timeStamp);
         
         % To get the joints on depth image space, you can use:
         %pos2D =
