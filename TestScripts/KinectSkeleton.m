@@ -1,6 +1,6 @@
 %% Setup the Kinect V2 for color and depth acquisition.
 % Create color and depth kinect videoinput objects.
-colorVid = videoinput('kinect', 1);
+%colorVid = videoinput('kinect', 1);
 depthVid = videoinput('kinect', 2);
 
 % Look at the device-specific properties on the depth source device,
@@ -11,23 +11,31 @@ depthSource = getselectedsource(depthVid);
 depthSource.EnableBodyTracking = 'on';
 
 % Acquire 100 color and depth frames.
-framesPerTrig = 100;
-colorVid.FramesPerTrigger = framesPerTrig;
+framesPerTrig = 1;
+%colorVid.FramesPerTrigger = framesPerTrig;
 depthVid.FramesPerTrigger = framesPerTrig;
-triggerconfig([colorVid depthVid],'manual');
+triggerconfig(depthVid);
+%triggerconfig([colorVid depthVid],'manual');
 
 % Preview
-preview([colorVid depthVid]);
+preview(depthVid);
+closepreview(depthVid);
 
 % Start the depth and color acquisition objects.
 % This begins acquisition, but does not start logging of acquired data.
-start([depthVid colorVid]);
+start(depthVid);
 
 %%
 % Get images and metadata from the color and depth device objects.
-[colorImg] = getdata(colorVid);
+%[colorImg] = getdata(colorVid);
+%trigger(depthVid)
+pause(5)
+tic
 [~, ~, metadata] = getdata(depthVid);
-
+toc
+start(depthVid);
+toc
+%%
 % These are the order of joints returned by the kinect adaptor.
 %    SpineBase = 1;
 %    SpineMid = 2;

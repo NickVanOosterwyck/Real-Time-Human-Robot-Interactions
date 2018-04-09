@@ -175,6 +175,9 @@ classdef kinectcore < handle
             obj.drawBox(obj.worktableVol);
             hold off
         end
+        function [bodies]=getSkeleton(obj)
+            [bodies]= obj.cam.getSkeleton();
+        end
   
 
     end
