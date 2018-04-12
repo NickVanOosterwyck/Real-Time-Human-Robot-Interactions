@@ -7,7 +7,8 @@ classdef kinectcore < handle
         CameraLocation      % Location of camera [x y z alfa beta gamma] (eul: ZYX absolute axes/ XYZ own axes)
         homeCameraLocation  % Home location of camera
         detectionVol        % Dimensions of volume where object are detected
-        worktableVol        % Dimensions of worktable 
+        worktableVol        % Dimensions of worktable
+        SkeletonConnectionMap %
     end
     
     methods
@@ -25,6 +26,31 @@ classdef kinectcore < handle
             obj.CameraLocation = zeros(1,6);
             obj.detectionVol = [-2 1.5 -2 1.6 0 2.3];
             obj.worktableVol = [-0.08 1.42 -0.7 0.7 0 0.845];
+            obj.SkeletonConnectionMap = [ [4 3];  % Spine
+                          [3 21];
+                          [21 2];
+                          [2 1];
+                          [21 9];   % Right Arm
+                          [9 10]; 
+                          [10 11];
+                          [11 12];
+                          [12 24];
+                          [12 25];
+                          [21 5];  % Left Arm
+                          [5 6];
+                          [6 7];
+                          [7 8];
+                          [8 22];
+                          [8 23];
+                          [1 17];   % Right Leg
+                          [17 18];
+                          [18 19];
+                          [19 20];
+                          [1 13];   % Left Leg
+                          [13 14];
+                          [14 15];
+                          [15 16];
+                        ];
         end % constructor
         function set.CameraLocation(obj,Location)
             if length(Location)==6 && isnumeric(Location) ...
@@ -116,7 +142,7 @@ classdef kinectcore < handle
             RGB = obj.cam.GetFrame(TofFrameType.RGB_IMAGE);
         end
         function [ptCloud] = transformPointCloud(obj,ptCloud)
-            RotMat = eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ');
+            RotMat = eul2rotm(obj.CameraLocation(4:6)/180*pi,'XYZ');
             HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
                 zeros(1,3) 1];
             XYZrow = ptCloud.Location.';
@@ -128,43 +154,8 @@ classdef kinectcore < handle
 
 
         function plotPointCloud(obj,ptCloud)
+            obj.createAxis();
             pcshow(ptCloud,'MarkerSize',8);
-            axis equal
-            axis(obj.detectionVol)
-            xlabel('X [m]');
-            ylabel('Y [m]');
-            zlabel('Z [m]');
-            hold on
-            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
-            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
-            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
-            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
-            hold off
-        end
-        function getPointCloudComparison(obj)
-            ptCloudDesampled = obj.getPointCloud('Desampled');
-            ptCloudFiltered = obj.getPointCloud('Filtered',ptCloudDesampled);
-            [dist,Point] = obj.calculateClosestPoint(ptCloudFiltered);
-            
-            figure('Name','PointCloud Comparison');
-            subplot(1,2,1);
-            title('PointCloud Desampled')
-            obj.plotPointCloud(ptCloudDesampled);
-
-            subplot(1,2,2);
-            title('PointCloud Filtered')
-            obj.plotPointCloud(ptCloudFiltered);
-            hold on
-            obj.drawRobotBase();
-            obj.drawBox(obj.worktableVol);
-            if ~isinf(dist)
-                plot3([0 Point(1)],[0 Point(2)],[0.988 Point(3)],'r')
-                plot3(Point(1),Point(2),Point(3),'r','Marker','o','LineWidth',2)
-                text(Point(1)/2,Point(2)/2,((Point(3)-0.988)/2)+0.988,[' ' num2str(round(dist,2)) ' m'])
-            else
-                text(0,0,1.3,'No point detected')
-            end
-            hold off
         end
         function getPointCloudCalibration(obj)
             ptCloudRaw = obj.getPointCloud('Raw');
@@ -177,6 +168,86 @@ classdef kinectcore < handle
         end
         function [bodies]=getSkeleton(obj)
             [bodies]= obj.cam.getSkeleton();
+            if ~isempty(bodies)
+                XYZ3 = bodies.Position;
+                RotMat = eul2rotm(obj.CameraLocation(4:6)/180*pi,'XYZ');
+                HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
+                    zeros(1,3) 1];
+                XYZ4 = [XYZ3;ones(1,length(XYZ3))];
+                Result = HomoTransMat*XYZ4;
+                bodies.Position= Result(1:3,:);
+            end
+        end
+        function [h] = getHandHeight(obj,varargin)
+            p = inputParser;
+            p.StructExpand = false;
+            acceptedInput = {'Left','Right'};
+            p.addRequired('obj');
+            p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedInput)));
+            p.addOptional('bodies',[]);
+            p.parse(obj,varargin{:});
+            
+            % get new bodies if no bodies is provided
+            if isempty(p.Results.bodies)
+                bodies = obj.getSkeleton();
+            else
+                bodies = p.Results.bodies;
+            end
+            
+            if strcmp(p.Results.Side,'Right')
+                i=11;
+            else
+                i=7;
+            end
+            
+            if ~isempty(bodies) && bodies.TrackingState(i)==2
+                h=bodies.Position(3,i);
+            else
+                h=0;
+            end
+        end
+        function [varargout] = drawSkeleton(obj,varargin)
+            p=inputParser;
+            p.StructExpand = false;
+            p.addRequired('obj');
+            p.addOptional('bodies',struct([]));
+            p.parse(obj,varargin{:});
+            
+            % get new bodies if no bodies is provided
+            if isempty(p.Results.bodies)
+                bodies = obj.getSkeleton();
+            else
+                bodies = p.Results.bodies;
+            end
+            
+            n=0;
+            if ~isempty(bodies)
+                pos=bodies.Position;
+                for i = 1:24
+                    if bodies.TrackingState(obj.SkeletonConnectionMap(i,1))==2 && bodies.TrackingState(obj.SkeletonConnectionMap(i,2))==2
+                        X=[pos(1,obj.SkeletonConnectionMap(i,1)) pos(1,obj.SkeletonConnectionMap(i,2))];
+                        Y=[pos(2,obj.SkeletonConnectionMap(i,1)) pos(2,obj.SkeletonConnectionMap(i,2))];
+                        Z=[pos(3,obj.SkeletonConnectionMap(i,1)) pos(3,obj.SkeletonConnectionMap(i,2))];
+                        plot3(X,Y,Z, 'LineWidth', 1.5, 'LineStyle', '-', 'Marker', '+', 'Color', 'r');
+                        n=n+1;
+                    end
+                end
+            end
+            varargout{1}=n;
+        end
+        function createAxis(obj)
+            figure
+            axis equal
+            axis(obj.detectionVol)
+            xlabel('X [m]');
+            ylabel('Y [m]');
+            zlabel('Z [m]');
+            hold on
+            quiver3(0,0,0,1,0,0,0.3,'r','Linewidth',1.5)
+            quiver3(0,0,0,0,1,0,0.3,'g','Linewidth',1.5)
+            quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
+            plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
+            grid on
         end
   
 

@@ -81,9 +81,7 @@ classdef ur10vrep < handle
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
  
         end
-        function getSkeleton(~)
-            warning('getSkeleton is not supported in VREP');
-        end
+
     end
 
 end

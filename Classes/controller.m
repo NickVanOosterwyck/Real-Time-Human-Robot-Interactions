@@ -29,35 +29,44 @@ classdef controller < handle %& kinectcore & ur10core
         %pointcloud if no pointcloud is provided. The reference kan be the
         %robot base or TCP.
             p = inputParser;
-            acceptedInput = {'Base','TCP'};
+            p.StructExpand = false;
+            acceptedMode = {'ptCloud','Skeleton'};
+            acceptedRef = {'Base','TCP'};
             p.addRequired('obj');
-            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
-            p.addOptional('ptCloudIn',[]);
+            p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
+            p.addOptional('dataIn',[]);
             p.parse(obj,Reference,varargin{:});
             
-            % get new pointcloud if no pointcloud is provided
-            if isempty(p.Results.ptCloudIn)
-                ptCloud = obj.cam.getPointCloud('Filtered');
-            else
-                ptCloud = p.Results.ptCloudIn;
+            % get data if necessary
+            if strcmp(p.Results.Mode,'ptCloud')
+                % get new pointcloud if no pointcloud is provided
+                if isempty(p.Results.dataIn)
+                    ptCloud = obj.cam.getPointCloud('Filtered');
+                else
+                    ptCloud = p.Results.dataIn;
+                end
+            elseif strcmp(p.Results.Mode,'Skeleton')
+                % get new bodies if no bodies is provided
+                if isempty(p.Results.dataIn)
+                    bodies = obj.cam.getSkeleton();
+                else
+                    bodies = p.Results.dataIn;
+                end
             end
-            % calculate distance
+            
+            % set startpoint
             if strcmp(p.Results.Reference,'Base')
                 StartPoint = [0 0 0.988];
-                [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,11,'Sort',true);
-                if ~isempty(indices)&&length(indices)>10
-                    Dist = dists(10);
-                    EndPoint = ptCloud.Location(indices(10),:);
-                else
-                    Dist = inf;
-                    EndPoint = [inf,inf,inf];
-                end
-                
-            else
+            elseif strcmp(p.Results.Reference,'TCP')
                 JointPositions = obj.rob.getJointPositions();
                 [StartPoint,~,~] = obj.rob.ForwKin(JointPositions);
                 StartPoint =StartPoint(1:3)./1000;
                 StartPoint(3)=StartPoint(3)+0.86;
+            end
+            
+            % calculate distance
+            if strcmp(p.Results.Mode,'ptCloud')
                 [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,11,'Sort',true);
                 if ~isempty(indices)&&length(indices)>10
                     Dist = dists(10);
@@ -66,9 +75,24 @@ classdef controller < handle %& kinectcore & ur10core
                     Dist = inf;
                     EndPoint = [inf,inf,inf];
                 end
+            elseif strcmp(p.Results.Mode,'Skeleton')
+                if ~isempty(bodies)
+                    pos=bodies.Position;
+                    distances = zeros(1,25);
+                    for i=1:25
+                        if bodies.TrackingState(i) == 2
+                            distances(i) = (pos(1,i)-StartPoint(1)
+                        else
+                            distances(i) = inf;
+                        end
+                    end
+                else
+                    Dist = inf;
+                    EndPoint = [inf,inf,inf];
+                end
+               
                 
             end
-
         end
         function showPlayer(obj)
             player = pcplayer(obj.cam.detectionVol(1:2),obj.cam.detectionVol(3:4),obj.cam.detectionVol(5:6),'MarkerSize',8);

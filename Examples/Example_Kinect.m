@@ -5,7 +5,7 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & Connect
-CameraType = 'vrep';    % vrep or real
+CameraType = 'real';    % vrep or real
 
 cam=kinectcore(CameraType);
 cam.connect();
@@ -27,7 +27,6 @@ cam.plotPointCloud(ptCloudDesampled);
 
 %% Get Pointcloud
 [ptCloud] = cam.getPointCloud('Filtered');
-[ptCloud] = cam.getPointCloud('Filtered',ptCloud);
 cam.plotPointCloud(ptCloud);
 
 %% Get comparison

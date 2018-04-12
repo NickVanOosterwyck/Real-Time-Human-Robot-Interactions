@@ -30,6 +30,9 @@ classdef kinectvrep < handle & VREP_Projector
             [~]=obj.simObj.simxSetObjectOrientation(obj.clientID,obj.handle,-1,Location(4:6)./180.*pi,obj.simObj.simx_opmode_oneshot);
             [~]=obj.simObj.simxSetObjectPosition(obj.clientID,obj.handle,-1,Location(1:3),obj.simObj.simx_opmode_oneshot);
         end
+        function getSkeleton(~)
+            error('getSkeleton is not supported in VREP')
+        end
         
     end
 end
