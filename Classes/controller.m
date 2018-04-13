@@ -130,6 +130,7 @@ classdef controller < handle %& kinectcore & ur10core
             
             while flag==1
                 tic
+                % draw data
                 if strcmp(p.Results.Mode,'ptCloud')
                     ptCloud = obj.cam.getPointCloud('Filtered');
                     pcshow(ptCloud,'MarkerSize',8)
@@ -138,21 +139,11 @@ classdef controller < handle %& kinectcore & ur10core
                 elseif strcmp(p.Results.Mode,'Skeleton')
                     bodies = obj.cam.getSkeleton;
                     nSkel=obj.cam.drawSkeleton(bodies);
+                    axis([-2 3 -3 1.8 0 2])
                     [dist,StartPoint,EndPoint] = obj.getClosestPoint('Skeleton',p.Results.Reference,bodies);
                 end
                 
-                if ~isinf(dist)
-                    plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r')
-                    plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
-                    plot3(EndPoint(1),EndPoint(2),EndPoint(3),'r','Marker','o','LineWidth',2)
-                    text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
-                else
-                    plot3([0 0],[0 0],[0 0])
-                    plot3(Inf,Inf,Inf)
-                    plot3(Inf,Inf,Inf)
-                    text(0,0,1.3,'No point detected')
-                end
-                
+                % draw robot
                 if p.Results.Robot
                     obj.rob.drawRobot();
                     nRob=7;
@@ -160,14 +151,25 @@ classdef controller < handle %& kinectcore & ur10core
                     nRob=0;
                 end
                 
+                % draw line with closest distance
+                if ~isinf(dist)
+                    plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],...
+                        'k','LineStyle','--','Marker','o','LineWidth',1)
+                    text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
+                else
+                    plot3([0 0],[0 0],[0 0])
+                    text(0,0,1.3,'No point detected')
+                end
+                
+                % delete previous plots
                 drawnow
                 children = get(gca, 'children');
-                delete(children(1:4+nRob));
+                delete(children(1:2+nRob));
                 if strcmp(p.Results.Mode,'ptCloud')
-                    delete(children(5+nRob));
+                    delete(children(3+nRob));
                 elseif strcmp(p.Results.Mode,'Skeleton')
                     if nSkel>0
-                        delete(children(5+nRob:4+nRob+nSkel));
+                        delete(children(3+nRob:2+nRob+nSkel));
                     end
                 end
                 toc
