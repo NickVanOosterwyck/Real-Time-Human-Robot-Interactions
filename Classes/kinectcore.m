@@ -153,10 +153,6 @@ classdef kinectcore < handle
         
 
 
-        function plotPointCloud(obj,ptCloud)
-            obj.createAxis();
-            pcshow(ptCloud,'MarkerSize',8);
-        end
         function getPointCloudCalibration(obj)
             ptCloudRaw = obj.getPointCloud('Raw');
             figure('Name','PointCloud Calibration');
@@ -235,10 +231,21 @@ classdef kinectcore < handle
             end
             varargout{1}=n;
         end
-        function createAxis(obj)
-            figure
+        function [varargout] = createAxis(obj,varargin)
+            p=inputParser;
+            acceptedAxis = {'auto','detVol'};
+            p.addRequired('obj');
+            p.addOptional('Axis','auto',@(x) any(validatestring(x,acceptedAxis)));
+            p.parse(obj,varargin{:});
+            
+            f=figure;
+            ax=axes;
             axis equal
-            axis(obj.detectionVol)
+            if strcmp(p.Results.Axis,'auto')
+                axis auto
+            elseif strcmp(p.Results.Axis,'detVol')
+                axis(obj.detectionVol)
+            end
             xlabel('X [m]');
             ylabel('Y [m]');
             zlabel('Z [m]');
@@ -248,6 +255,10 @@ classdef kinectcore < handle
             quiver3(0,0,0,0,0,1,0.3,'b','Linewidth',1.5)
             plotCamera('Location',obj.CameraLocation(1:3),'Orientation',eul2rotm(obj.CameraLocation(4:6)./180.*pi,'XYZ').','Opacity',0,'Size',0.1);
             grid on
+            view(3)
+            varargout{1}=f;
+            varargout{2}=ax;
+            
         end
   
 

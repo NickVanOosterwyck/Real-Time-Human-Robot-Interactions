@@ -23,7 +23,7 @@ classdef controller < handle %& kinectcore & ur10core
             obj.rob.connect();
         end
         
-        function [Dist,StartPoint,EndPoint] = getClosestPoint(obj,Reference,varargin)
+        function [Dist,StartPoint,EndPoint] = getClosestPoint(obj,Mode,Reference,varargin)
         %getClosestPoint calculates the closest distance between the
         %reference and a point in a pointcloud. The function will get a new
         %pointcloud if no pointcloud is provided. The reference kan be the
@@ -36,7 +36,7 @@ classdef controller < handle %& kinectcore & ur10core
             p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
             p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
             p.addOptional('dataIn',[]);
-            p.parse(obj,Reference,varargin{:});
+            p.parse(obj,Mode,Reference,varargin{:});
             
             % get data if necessary
             if strcmp(p.Results.Mode,'ptCloud')
@@ -81,17 +81,17 @@ classdef controller < handle %& kinectcore & ur10core
                     distances = zeros(1,25);
                     for i=1:25
                         if bodies.TrackingState(i) == 2
-                            distances(i) = (pos(1,i)-StartPoint(1)
+                            distances(i) = sqrt(((pos(1,i)-StartPoint(1))^2)+((pos(2,i)-StartPoint(2))^2)+((pos(3,i)-StartPoint(3))^2));
                         else
                             distances(i) = inf;
                         end
                     end
+                    [Dist,ind]=min(distances);
+                    EndPoint = [pos(1,ind) pos(2,ind) pos(3,ind)];
                 else
                     Dist = inf;
                     EndPoint = [inf,inf,inf];
                 end
-               
-                
             end
         end
         function showPlayer(obj)
@@ -103,21 +103,23 @@ classdef controller < handle %& kinectcore & ur10core
                 toc
             end
             clc
-        end
-        function showTrackingPlayer(obj,Reference)
+        end %DEPRECATED
+        function showTrackingPlayer(obj,Mode,Reference,varargin)
             p = inputParser;
-            acceptedInput = {'Base','TCP'};
+            acceptedMode = {'ptCloud','Skeleton'};
+            acceptedRef = {'Base','TCP'};
             p.addRequired('obj');
-            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
-            p.parse(obj,Reference);
+            p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
+            p.addOptional('Robot',true,@islogical);
+            p.parse(obj,Mode,Reference,varargin{:});
             
-            figure('Name','PointCloud Tracking Player');
-            obj.cam.plotPointCloud([Inf Inf Inf]);
-            title('PointCloud Tracking Player')
+            obj.cam.createAxis();
+            title('Tracking Player')
             hold on
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
-            
+                        
             flag = 1;
             function pushbutton(~,~)
                 flag = 0;
@@ -128,11 +130,17 @@ classdef controller < handle %& kinectcore & ur10core
             
             while flag==1
                 tic
-                ptCloud = obj.cam.getPointCloud('Filtered');
-                pcshow(ptCloud,'MarkerSize',8)
-                axis(obj.cam.detectionVol)
-                grid on
-                [dist,StartPoint,EndPoint] = obj.getClosestPoint(p.Results.Reference,ptCloud);
+                if strcmp(p.Results.Mode,'ptCloud')
+                    ptCloud = obj.cam.getPointCloud('Filtered');
+                    pcshow(ptCloud,'MarkerSize',8)
+                    axis(obj.cam.detectionVol)
+                    [dist,StartPoint,EndPoint] = obj.getClosestPoint('ptCloud',p.Results.Reference,ptCloud);
+                elseif strcmp(p.Results.Mode,'Skeleton')
+                    bodies = obj.cam.getSkeleton;
+                    nSkel=obj.cam.drawSkeleton(bodies);
+                    [dist,StartPoint,EndPoint] = obj.getClosestPoint('Skeleton',p.Results.Reference,bodies);
+                end
+                
                 if ~isinf(dist)
                     plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r')
                     plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
@@ -144,40 +152,67 @@ classdef controller < handle %& kinectcore & ur10core
                     plot3(Inf,Inf,Inf)
                     text(0,0,1.3,'No point detected')
                 end
+                
+                if p.Results.Robot
+                    obj.rob.drawRobot();
+                    nRob=7;
+                else
+                    nRob=0;
+                end
+                
                 drawnow
                 children = get(gca, 'children');
-                delete(children(1:5));
+                delete(children(1:4+nRob));
+                if strcmp(p.Results.Mode,'ptCloud')
+                    delete(children(5+nRob));
+                elseif strcmp(p.Results.Mode,'Skeleton')
+                    if nSkel>0
+                        delete(children(5+nRob:4+nRob+nSkel));
+                    end
+                end
                 toc
             end
             close
             clc
             
         end
-        function showProcessedPointCloud(obj,Reference)
+        function showDistanceCalculation(obj,Mode,Reference)
             p = inputParser;
-            acceptedInput = {'Base','TCP'};
+            acceptedMode = {'ptCloud','Skeleton'};
+            acceptedRef = {'Base','TCP'};
             p.addRequired('obj');
-            p.addRequired('Reference',@(x) any(validatestring(x,acceptedInput)));
-            p.parse(obj,Reference);
+            p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
+            p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
+            p.parse(obj,Mode,Reference);
             
-            ptCloud = obj.cam.getPointCloud('Filtered');
-            [dist,StartPoint,EndPoint] = obj.getClosestPoint(p.Results.Reference,ptCloud);
             
-            title('PointCloud Processed')
-            obj.cam.plotPointCloud(ptCloud);
-            hold on
+            if strcmp(p.Results.Mode,'ptCloud')
+                obj.cam.createAxis('detVol'); hold on
+                ptCloud = obj.cam.getPointCloud('Filtered');
+                pcshow(ptCloud,'MarkerSize',8);
+                axis(obj.cam.detectionVol)
+                [dist,StartPoint,EndPoint] = obj.getClosestPoint('ptCloud',p.Results.Reference,ptCloud);
+            elseif strcmp(p.Results.Mode,'Skeleton')
+                obj.cam.createAxis('auto'); hold on
+                bodies = obj.cam.getSkeleton;
+                obj.cam.drawSkeleton(bodies);
+                [dist,StartPoint,EndPoint] = obj.getClosestPoint('Skeleton',p.Results.Reference,bodies);
+            end
+            
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
             obj.rob.drawRobot();
+            title('Distance Calculation')
             
             if ~isinf(dist)
-                plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r')
+                plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r','LineWidth',2)
                 plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
                 plot3(EndPoint(1),EndPoint(2),EndPoint(3),'r','Marker','o','LineWidth',2)
                 text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
             else
                 text(0,0,1.3,'No point detected')
             end
+            hold off
             
         end
         
