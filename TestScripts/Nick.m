@@ -1,16 +1,23 @@
 %%
+CameraType = 'real';    % vrep or real
+
+cam=kinectcore(CameraType);
+cam.connect();
+%%
 pause(5)
 bodies=cam.getSkeleton();
-h=cam.getHandHeight('Left',bodies)
-[Dist,Start,End] = ctrl.getClosestPoint('Skeleton','TCP',bodies);
+%h=cam.getHandHeight('Left',bodies)
 
 cam.createAxis();
 hold on
 n=cam.drawSkeleton(bodies);
-plot3(Start(1),Start(2),Start(3),'o');
-plot3(End(1),End(2),End(3),'o');
 hold off
 
 %%
 pause(5)
 ctrl.showDistanceCalculation('Skeleton','Base'); % ptCloud/Skeleton and TCP/Base
+
+%%
+pause(5)
+[depth,color] = cam.GetFrame(TofFrameType.DEPTH_IMAGE,TofFrameType.RGB_IMAGE);
+[bodies, fcp, timeStamp] = cam.CameraProtocol.CameraSettings.getBodies('Euler');

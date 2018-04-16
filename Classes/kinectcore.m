@@ -162,24 +162,30 @@ classdef kinectcore < handle
             obj.drawBox(obj.worktableVol);
             hold off
         end
-        function [bodies]=getSkeleton(obj)
+        function [bodies,varargout]=getSkeleton(obj)
             [bodies]= obj.cam.getSkeleton();
+            n=length(bodies);
+            varargout{1}=n;
             if ~isempty(bodies)
-                XYZ3 = bodies.Position;
                 RotMat = eul2rotm(obj.CameraLocation(4:6)/180*pi,'XYZ');
                 HomoTransMat = [ RotMat obj.CameraLocation(1:3).';...
                     zeros(1,3) 1];
-                XYZ4 = [XYZ3;ones(1,length(XYZ3))];
-                Result = HomoTransMat*XYZ4;
-                bodies.Position= Result(1:3,:);
+                for i=1:n
+                    XYZ3 = bodies(i).Position;
+                    XYZ4 = [XYZ3;ones(1,length(XYZ3))];
+                    Result = HomoTransMat*XYZ4;
+                    bodies(i).Position= Result(1:3,:);
+                end
             end
         end
         function [h] = getHandHeight(obj,varargin)
             p = inputParser;
             p.StructExpand = false;
-            acceptedInput = {'Left','Right'};
+            acceptedSide = {'Left','Right'};
+            acceptedOut = {'All','Max'};
             p.addRequired('obj');
-            p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedInput)));
+            p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedSide)));
+            p.addOptional('Out','Right',@(x) any(validatestring(x,acceptedOut)));
             p.addOptional('bodies',[]);
             p.parse(obj,varargin{:});
             
@@ -196,11 +202,21 @@ classdef kinectcore < handle
                 i=7;
             end
             
-            if ~isempty(bodies) && bodies.TrackingState(i)==2
-                h=bodies.Position(3,i);
-            else
-                h=0;
+            h=zeros(1,6);
+            if ~isempty(bodies)
+                for j=1:numBodies
+                    if bodies(j).TrackingState(i)==2
+                        h(j)=bodies(j).Position(3,i);
+                    else
+                        h=0;
+                    end
+                end
             end
+            
+            if strcmp(p.Results.Out,'Max')
+                h=max(h);
+            end
+            
         end
         function [varargout] = drawSkeleton(obj,varargin)
             p=inputParser;
@@ -216,16 +232,22 @@ classdef kinectcore < handle
                 bodies = p.Results.bodies;
             end
             
+            
+            % Marker colors for up to 6 bodies.
+            colors = ['r';'g';'b';'c';'y';'m'];
             n=0;
+            numBodies=length(bodies);
             if ~isempty(bodies)
-                pos=bodies.Position;
-                for i = 1:24
-                    if bodies.TrackingState(obj.SkeletonConnectionMap(i,1))==2 && bodies.TrackingState(obj.SkeletonConnectionMap(i,2))==2
-                        X=[pos(1,obj.SkeletonConnectionMap(i,1)) pos(1,obj.SkeletonConnectionMap(i,2))];
-                        Y=[pos(2,obj.SkeletonConnectionMap(i,1)) pos(2,obj.SkeletonConnectionMap(i,2))];
-                        Z=[pos(3,obj.SkeletonConnectionMap(i,1)) pos(3,obj.SkeletonConnectionMap(i,2))];
-                        plot3(X,Y,Z, 'LineWidth', 1.5, 'LineStyle', '-', 'Marker', '+', 'Color', 'r');
-                        n=n+1;
+                for j=1:numBodies
+                    pos=bodies(j).Position;
+                    for i = 1:24
+                        if bodies(j).TrackingState(obj.SkeletonConnectionMap(i,1))==2 && bodies(j).TrackingState(obj.SkeletonConnectionMap(i,2))==2
+                            X=[pos(1,obj.SkeletonConnectionMap(i,1)) pos(1,obj.SkeletonConnectionMap(i,2))];
+                            Y=[pos(2,obj.SkeletonConnectionMap(i,1)) pos(2,obj.SkeletonConnectionMap(i,2))];
+                            Z=[pos(3,obj.SkeletonConnectionMap(i,1)) pos(3,obj.SkeletonConnectionMap(i,2))];
+                            plot3(X,Y,Z, 'LineWidth', 1.5, 'LineStyle', '-', 'Marker', '+', 'Color', colors(j));
+                            n=n+1;
+                        end
                     end
                 end
             end
