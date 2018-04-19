@@ -48,6 +48,9 @@ classdef ur10vrep < handle
             end
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
         end
+        function get_actual_tcp_speed(~)
+            error('get_actual_tcp_speed is not supported in VREP')
+        end
         function movej(obj,q,~,v,t,~)
             % a and r are ignored in vrep
             deltaAng = abs(q-obj.get_actual_joint_positions());
@@ -81,6 +84,7 @@ classdef ur10vrep < handle
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
  
         end
+
     end
 
 end

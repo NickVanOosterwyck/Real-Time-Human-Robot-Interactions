@@ -78,9 +78,9 @@ classdef ur10core < handle
             JointPositions_rad=obj.rob.get_actual_joint_positions();
             JointPositions=JointPositions_rad/pi*180;
         end
-        function [TCPSpeed] = getTCPSpeed(obj)
-            Velocities = obj.rob.get_actual_tcp_speed();
-            TCPSpeed = sqrt(Velocities(1)^2+Velocities(2)^2+Velocities(3)^2);
+        function [TCPSpeed] = getTCPspeed(obj)
+            vec = obj.rob.get_actual_tcp_speed();
+            TCPSpeed = round(sqrt(vec(1)^2+vec(2)^2+vec(3)^2),2);
         end
         function movej(obj,q,a,v,t,r,varargin)
             p=inputParser;
@@ -146,24 +146,6 @@ classdef ur10core < handle
             obj.rob.setSpeedFactor(SpeedFactor);
             pause(0.1)
         end
-        %{
-        function moveToJointTargetPositions(obj,JointTargetPositions,MaxJointSpeedFactor)
-            obj.JointTargetPositions=JointTargetPositions;
-            obj.MaxJointSpeedFactor=MaxJointSpeedFactor;
-            if isequal(JointTargetPositions,obj.JointTargetPositions)
-                JointTargetPositions = JointTargetPositions+0.1;
-            end
-            obj.rob.moveToJointTargetPositions(JointTargetPositions,MaxJointSpeedFactor);
-        end
-        function moveToTCPTargetPositions(obj,TCPTargetPositions,MaxJointSpeedFactor)
-            JointPositions = obj.InvKin(TCPTargetPositions);
-            obj.moveToJointTargetPositions(JointPositions,MaxJointSpeedFactor);
-        end
-        function stopRobot(obj)
-            [~] = obj.getJointPositions(); %because of streaming mode in VREP
-            obj.moveToJointTargetPositions(obj.getJointPositions(),0.1); %value needs to be tested
-        end
-        %}
         function [flag] = checkPoseReached(obj,JointTargetPositions,range)
             Positions = obj.getJointPositions();
             if max(abs(Positions-JointTargetPositions))< range
@@ -193,7 +175,7 @@ classdef ur10core < handle
                 T(:,:,i) = T(:,:,i-1)*R(:,:,i);
             end
             
-            Eul = rotm2eul(T(1:3,1:3,7),'XYZ')./pi.*180;
+            Eul = rotm2eul(T(1:3,1:3,7),'XYZ')/pi*180;
             TCP = [T(1:3,4,7).' Eul];
         end
         function JointPositions = InvKin (obj,TCP)
@@ -248,17 +230,16 @@ classdef ur10core < handle
         end
         function drawRobot(obj)
             [~,~,T] = obj.ForwKin(obj.getJointPositions);
-            plot3(0,0,0.86,'g','Marker','o','LineWidth',2)
             
             P = zeros(7,3);
             for i=1:7
                 P(i,:) = [T(1,4,i)/1000 T(2,4,i)/1000 T(3,4,i)/1000+0.86];
-                plot3(P(i,1),P(i,2),P(i,3),'g','Marker','o','LineWidth',2)
+                %plot3(P(i,1),P(i,2),P(i,3),'g','Marker','o','LineWidth',2)
             end
             
-            plot3([0 P(1,1)],[0 P(1,2)],[0.86 P(1,3)],'g')
+            plot3([0 P(1,1)],[0 P(1,2)],[0.86 P(1,3)],'g','Marker','o','LineWidth',2)
             for i=2:7
-                plot3([P(i-1,1) P(i,1)],[P(i-1,2) P(i,2)],[P(i-1,3) P(i,3)],'g')
+                plot3([P(i-1,1) P(i,1)],[P(i-1,2) P(i,2)],[P(i-1,3) P(i,3)],'g','Marker','o','LineWidth',2)
             end
             
         end
