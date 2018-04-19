@@ -78,9 +78,9 @@ classdef ur10core < handle
             JointPositions_rad=obj.rob.get_actual_joint_positions();
             JointPositions=JointPositions_rad/pi*180;
         end
-        function [TCPSpeed] = getTCPSpeed(obj)
-            Velocities = obj.rob.get_actual_tcp_speed();
-            TCPSpeed = sqrt(Velocities(1)^2+Velocities(2)^2+Velocities(3)^2);
+        function [TCPSpeed] = getTCPspeed(obj)
+            vec = obj.rob.get_actual_tcp_speed();
+            TCPSpeed = round(sqrt(vec(1)^2+vec(2)^2+vec(3)^2),2);
         end
         function movej(obj,q,a,v,t,r,varargin)
             p=inputParser;
@@ -175,7 +175,7 @@ classdef ur10core < handle
                 T(:,:,i) = T(:,:,i-1)*R(:,:,i);
             end
             
-            Eul = rotm2eul(T(1:3,1:3,7),'XYZ')./pi.*180;
+            Eul = rotm2eul(T(1:3,1:3,7),'XYZ')/pi*180;
             TCP = [T(1:3,4,7).' Eul];
         end
         function JointPositions = InvKin (obj,TCP)

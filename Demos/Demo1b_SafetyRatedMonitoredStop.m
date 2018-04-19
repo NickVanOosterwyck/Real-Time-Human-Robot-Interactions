@@ -39,6 +39,7 @@ h_treshold = 1.9;
 treshold = 0.1;
 iterations = 1;
 Ref = 'TCP'; % choose TCP or Base
+Mode = 'Skeleton' % choose Skeleton or ptCloud
 a=0.5; v=0.1; t=0; r=0;
 
 ctrl.rob.setSpeedFactor(MaxSpeedFactor);
@@ -54,11 +55,7 @@ for it = 1:iterations
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             %tic
             ptCloud=ctrl.cam.getPointCloud('Filtered');
-            if ptCloud.Count ~=0
-                h = ptCloud.ZLimits(2);
-            else
-                h=0;
-            end
+            h=ctrl.cam.getHandHeight('Right','Max');
             [Dist,~,~] = ctrl.getClosestPoint(Ref,ptCloud);
             if Dist < rStop
                 if state ~=0 && abs(LastDist-Dist)>treshold

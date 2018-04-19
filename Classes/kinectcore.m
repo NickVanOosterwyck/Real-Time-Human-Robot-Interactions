@@ -150,18 +150,16 @@ classdef kinectcore < handle
             Result = HomoTransMat*XYZ;
             ptCloud = pointCloud(Result(1:3,:).');
         end
-        
 
-
-        function getPointCloudCalibration(obj)
-            ptCloudRaw = obj.getPointCloud('Raw');
-            figure('Name','PointCloud Calibration');
-            obj.plotPointCloud(ptCloudRaw);
-            hold on
-            obj.drawRobotBase();
-            obj.drawBox(obj.worktableVol);
-            hold off
-        end
+%         function getPointCloudCalibration(obj)
+%             ptCloudRaw = obj.getPointCloud('Raw');
+%             figure('Name','PointCloud Calibration');
+%             obj.plotPointCloud(ptCloudRaw);
+%             hold on
+%             obj.drawRobotBase();
+%             obj.drawBox(obj.worktableVol);
+%             hold off
+%         end
         function [bodies,varargout]=getSkeleton(obj)
             [bodies]= obj.cam.getSkeleton();
             n=length(bodies);
@@ -196,14 +194,17 @@ classdef kinectcore < handle
                 bodies = p.Results.bodies;
             end
             
+            % set indice for right/left hand
             if strcmp(p.Results.Side,'Right')
                 i=11;
             else
                 i=7;
             end
             
+            % get height of hand
             h=zeros(1,6);
             if ~isempty(bodies)
+                numBodies=length(bodies);
                 for j=1:numBodies
                     if bodies(j).TrackingState(i)==2
                         h(j)=bodies(j).Position(3,i);
@@ -211,6 +212,8 @@ classdef kinectcore < handle
                         h=0;
                     end
                 end
+            else
+                h=0;
             end
             
             if strcmp(p.Results.Out,'Max')
@@ -248,6 +251,13 @@ classdef kinectcore < handle
                             plot3(X,Y,Z, 'LineWidth', 1.5, 'LineStyle', '-', 'Marker', '+', 'Color', colors(j));
                             n=n+1;
                         end
+%                         if bodies(j).TrackingState(obj.SkeletonConnectionMap(i,1))==1 || bodies(j).TrackingState(obj.SkeletonConnectionMap(i,2))==1
+%                             X=[pos(1,obj.SkeletonConnectionMap(i,1)) pos(1,obj.SkeletonConnectionMap(i,2))];
+%                             Y=[pos(2,obj.SkeletonConnectionMap(i,1)) pos(2,obj.SkeletonConnectionMap(i,2))];
+%                             Z=[pos(3,obj.SkeletonConnectionMap(i,1)) pos(3,obj.SkeletonConnectionMap(i,2))];
+%                             plot3(X,Y,Z, 'LineWidth', 1.5, 'LineStyle', '--', 'Marker', '+', 'Color', colors(j));
+%                             n=n+1;
+%                         end
                     end
                 end
             end

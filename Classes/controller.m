@@ -65,7 +65,7 @@ classdef controller < handle %& kinectcore & ur10core
                 StartPoint(3)=StartPoint(3)+0.86;
             end
             
-            % calculate distance
+            % calculate distances
             if strcmp(p.Results.Mode,'ptCloud')
                 [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,11,'Sort',true);
                 if ~isempty(indices)&&length(indices)>10
@@ -77,33 +77,44 @@ classdef controller < handle %& kinectcore & ur10core
                 end
             elseif strcmp(p.Results.Mode,'Skeleton')
                 if ~isempty(bodies)
-                    pos=bodies.Position;
-                    distances = zeros(1,25);
-                    for i=1:25
-                        if bodies.TrackingState(i) == 2
-                            distances(i) = sqrt(((pos(1,i)-StartPoint(1))^2)+((pos(2,i)-StartPoint(2))^2)+((pos(3,i)-StartPoint(3))^2));
-                        else
-                            distances(i) = inf;
+                    numBodies=length(bodies);
+                    distances = zeros(numBodies,25);
+                    for j=1:numBodies
+                        pos=bodies(j).Position;
+                        for i=1:25
+                            if bodies(j).TrackingState(i) == 2
+                                distances(j,i) = sqrt(((pos(1,i)-StartPoint(1))^2)+((pos(2,i)-StartPoint(2))^2)+((pos(3,i)-StartPoint(3))^2));
+                            else
+                                distances(j,i) = inf;
+                            end
                         end
                     end
-                    [Dist,ind]=min(distances);
-                    EndPoint = [pos(1,ind) pos(2,ind) pos(3,ind)];
+                    if numBodies>1
+                        [Min,indy]=min(distances);
+                        [Dist,indx]=min(Min);
+                        indb=indy(indx);
+                    else
+                        [Dist,indx]=min(distances);
+                        indb=1;
+                    end
+                    pos=bodies(indb).Position;
+                    EndPoint = [pos(1,indx) pos(2,indx) pos(3,indx)];
                 else
                     Dist = inf;
                     EndPoint = [inf,inf,inf];
                 end
             end
         end
-        function showPlayer(obj)
-            player = pcplayer(obj.cam.detectionVol(1:2),obj.cam.detectionVol(3:4),obj.cam.detectionVol(5:6),'MarkerSize',8);
-            while isOpen(player)
-                tic
-                ptCloud = obj.cam.getPointCloud('Filtered');
-                view(player, ptCloud);
-                toc
-            end
-            clc
-        end %DEPRECATED
+%         function showPlayer(obj)
+%             player = pcplayer(obj.cam.detectionVol(1:2),obj.cam.detectionVol(3:4),obj.cam.detectionVol(5:6),'MarkerSize',8);
+%             while isOpen(player)
+%                 tic
+%                 ptCloud = obj.cam.getPointCloud('Filtered');
+%                 view(player, ptCloud);
+%                 toc
+%             end
+%             clc
+%         end %DEPRECATED
         function showTrackingPlayer(obj,Mode,Reference,varargin)
             p = inputParser;
             acceptedMode = {'ptCloud','Skeleton'};

@@ -1,23 +1,31 @@
-%%
+%% Create & connect
 CameraType = 'real';    % vrep or real
+RobotType = 'real';     % vrep or real
 
-cam=kinectcore(CameraType);
-cam.connect();
+ctrl = controller(CameraType,RobotType);
+ctrl.connect();
+
 %%
 pause(5)
-bodies=cam.getSkeleton();
-%h=cam.getHandHeight('Left',bodies)
+bodies=ctrl.cam.getSkeleton();
+h=ctrl.cam.getHandHeight('Left','Max',bodies)
 
-cam.createAxis();
+ctrl.cam.createAxis();
 hold on
-n=cam.drawSkeleton(bodies);
+n=ctrl.cam.drawSkeleton(bodies);
 hold off
 
 %%
 pause(5)
-ctrl.showDistanceCalculation('Skeleton','Base'); % ptCloud/Skeleton and TCP/Base
+ctrl.showDistanceCalculation('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
 
 %%
 pause(5)
-[depth,color] = cam.GetFrame(TofFrameType.DEPTH_IMAGE,TofFrameType.RGB_IMAGE);
-[bodies, fcp, timeStamp] = cam.CameraProtocol.CameraSettings.getBodies('Euler');
+h=ctrl.cam.getHandHeight('Right','Max')
+
+%%
+ctrl.showTrackingPlayer('Skeleton','TCP')
+
+%%
+ctrl.rob.goHome()
+ctrl.rob.setSpeedFactor(0);
