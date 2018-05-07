@@ -123,6 +123,26 @@ classdef ur10core < handle
                 obj.rob.movel(q,a,v,t,r)
             end
         end
+        function servoj(obj,q,a,v,t,lookahead_time,gain,varargin)
+            p=inputParser;
+            acceptedInput = {'Joint','World'};
+            p.addRequired('obj');
+            p.addRequired('q');
+            p.addRequired('a');
+            p.addRequired('v');
+            p.addRequired('t');
+            p.addRequired('lookahead_time');
+            p.addRequired('gain');
+            p.addOptional('CS','Joint',@(x) any(validatestring(x,acceptedInput))); %coordinate system
+            p.parse(obj,q,a,v,t,lookahead_time,gain,varargin{:});
+            
+            if p.Results.CS =='World'
+                q=obj.InvKin(q);
+            end
+            obj.JointTargetPositions=q;
+            q=q/180*pi;
+            obj.rob.servoj(q,a,v,t,lookahead_time,gain)
+        end
         function stopj(obj,a)
             obj.rob.stopj(a);
         end

@@ -45,6 +45,12 @@ classdef ur10real < handle
             msg.Data = ['movej(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(r) ')'];
             send(obj.scriptpub,msg); 
         end
+        function servoj(obj,q,a,v,t,lookahead_time,gain)
+            msg=rosmessage('std_msgs/String');
+            q_str = ['[' num2str(q(1)) ',' num2str(q(2)) ',' num2str(q(3)) ',' num2str(q(4)) ',' num2str(q(5)) ',' num2str(q(6)) ']'];
+            msg.Data = ['servoj(' q_str ',' num2str(a) ',' num2str(v) ',' num2str(t) ',' num2str(lookahead_time) ',' num2str(gain) ')'];
+            send(obj.scriptpub,msg); 
+        end
         function movel(obj,q,a,v,t,r)
             msg=rosmessage('std_msgs/String');
             q_str = ['[' num2str(q(1)) ',' num2str(q(2)) ',' num2str(q(3)) ',' num2str(q(4)) ',' num2str(q(5)) ',' num2str(q(6)) ']'];

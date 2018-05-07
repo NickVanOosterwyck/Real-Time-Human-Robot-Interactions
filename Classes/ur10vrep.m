@@ -71,6 +71,9 @@ classdef ur10vrep < handle
         function movel(~,varargin)
             warning('movel is not supported in VREP');
         end
+        function servoj(~,varargin)
+            warning('servoj is not supported in VREP');
+        end
         function stopj(obj,~)
             obj.movej(obj.get_actual_joint_positions(),0,0,0.1,0);
         end

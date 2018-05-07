@@ -44,7 +44,7 @@ iterations = 1;
 th_dist = 0.1;
 th_h = 0.1;
 Ref = 'TCP'; % choose TCP or Base
-Mode = 'ptCloud'; % choose Skeleton or ptCloud
+Mode = 'Skeleton'; % choose Skeleton or ptCloud
 a=0.5; v=0.2; t=0; r=0;
 
 SF=0; state=3; LastDist=Inf; LastH=Inf;

@@ -15,7 +15,7 @@ ctrl.connect();
 ctrl.showDistanceCalculation('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
 
 %% Show Player
-ctrl.showTrackingPlayer('ptCloud','TCP'); % ptCloud/Skeleton and TCP/Base
+ctrl.showTrackingPlayer('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
 
 %% Calculate closest distance
 [Dist,Start,End] = ctrl.getClosestPoint('Skeleton','Base');
