@@ -11,6 +11,10 @@ RobotType = 'real';     % vrep or real
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
+%% 2nd robot
+rob2=ur10core('vrep');
+rob2.connect();
+
 %% Set up
 %-- move camera
 %ctrl.cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
@@ -29,6 +33,7 @@ Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 rStop = 1;
 
 %% Go home
+rob2.goHome();
 ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
@@ -36,9 +41,10 @@ disp('Robot is ready in home pose.')
 MaxSpeedFactor = 1;
 Range = 0.05;
 iterations = 1;
-a=0.5; v=0.1; t=0; r=0;
+a=0.5; v=0.2; t=0; r=0;
 
 ctrl.rob.setSpeedFactor(MaxSpeedFactor);
+rob2.setSpeedFactor(MaxSpeedFactor);
 state = 0;
 for it = 1:iterations
     i = 1;
@@ -46,7 +52,8 @@ for it = 1:iterations
         state = 1;
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             if  state ==1
-                ctrl.rob.movel(Path(i,:),a,v,t,r);
+                ctrl.rob.movej(Path(i,:),a,v,t,r);
+                rob2.movej(Path(i,:),a,v,t,r);
                 state = 2;
             end
         end

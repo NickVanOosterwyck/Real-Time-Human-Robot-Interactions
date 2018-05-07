@@ -11,6 +11,10 @@ RobotType = 'real';     % vrep or real
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
+%% 2nd robot
+rob2=ur10core('vrep');
+rob2.connect();
+
 %% Set up
 %-- move camera
 %ctrl.cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
@@ -26,10 +30,11 @@ PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 1.5;
+rStop = 1;
 hStop = 1.8;
 
 %% Go home
+rob2.goHome();
 ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
@@ -39,7 +44,7 @@ iterations = 1;
 th_dist = 0.1;
 th_h = 0.1;
 Ref = 'TCP'; % choose TCP or Base
-Mode = 'Skeleton'; % choose Skeleton or ptCloud
+Mode = 'ptCloud'; % choose Skeleton or ptCloud
 a=0.5; v=0.2; t=0; r=0;
 
 SF=0; state=3; LastDist=Inf; LastH=Inf;
@@ -49,20 +54,16 @@ tic
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
-        ctrl.rob.movel(Path(i,:),a,v,t,r);
+        ctrl.rob.movej(Path(i,:),a,v,t,r);
+        rob2.movej(Path(i,:),a,v,t,r);
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
-            % get data
+             % get data
             if strcmp(Mode,'Skeleton')
                 data=ctrl.cam.getSkeleton();
-                h=ctrl.cam.getHandHeight('Right','Max',data);
             elseif strcmp(Mode,'ptCloud')
                 data = ctrl.cam.getPointCloud('Filtered');
-                if data.Count ~=0
-                    h = data.ZLimits(2);
-                else
-                    h=0;
-                end
             end
+            h=ctrl.cam.getHandHeight(Mode,'Right','Max',data);
             [Dist,~,~] = ctrl.getClosestPoint(Mode,Ref,data);
             
             % determine speed
@@ -78,7 +79,8 @@ for it = 1:iterations
             
             % send and plot speed
             time=toc;
-            ctrl.rob.setSpeedFactor(SF)
+            ctrl.rob.setSpeedFactor(SF);
+            rob2.setSpeedFactor(SF);
             TCPSpeed = ctrl.rob.getTCPspeed();
             dis.setValues('Dist',Dist,'TargetPose',i,'LastDist',LastDist,...
                 'Height',h,'TCPSpeed',v*SF,'Time',time,'State',state);

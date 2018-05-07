@@ -6,10 +6,14 @@ clear; close all; clc
 
 %% Create & Connect
 CameraType = 'real';    % vrep or real
-RobotType = 'vrep';     % vrep or real
+RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
+
+%% 2nd robot
+rob2=ur10core('vrep');
+rob2.connect();
 
 %% Set up
 %-- move camera
@@ -30,8 +34,8 @@ rStop = 1;
 rSlow = 2;
 hStop = 1.8;
 
-
 %% Go home
+rob2.goHome();
 ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
@@ -51,20 +55,16 @@ tic
 for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
-        ctrl.rob.movel(Path(i,:),a,v,t,r);
+        ctrl.rob.movej(Path(i,:),a,v,t,r);
+        rob2.movej(Path(i,:),a,v,t,r);
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
             % get data
             if strcmp(Mode,'Skeleton')
                 data=ctrl.cam.getSkeleton();
-                h=ctrl.cam.getHandHeight('Right','Max',data);
             elseif strcmp(Mode,'ptCloud')
                 data = ctrl.cam.getPointCloud('Filtered');
-                if data.Count ~=0
-                    h = data.ZLimits(2);
-                else
-                    h=0;
-                end
             end
+            h=ctrl.cam.getHandHeight(Mode,'Right','Max',data);
             [Dist,~,~] = ctrl.getClosestPoint(Mode,Ref,data);
             
             % determine speed
@@ -74,7 +74,7 @@ for it = 1:iterations
             elseif h>hStop && abs(LastH-h)>th_h
                 LastH=h;
                 SF=0; ctrl.rob.setSpeedFactor(SF)
-            elseif Dist>rStop && Dist<rSlow
+            elseif Dist>rStop && Dist<rSlow && h<hStop
                 SF=(Dist-rStop)/(rSlow-rStop);
             elseif Dist>rSlow && h<hStop
                 SF=1;
@@ -82,7 +82,8 @@ for it = 1:iterations
             
             % send and plot speed
             time=toc;
-            ctrl.rob.setSpeedFactor(SF)
+            ctrl.rob.setSpeedFactor(SF);
+            rob2.setSpeedFactor(SF)
             TCPSpeed = ctrl.rob.getTCPspeed();
             dis.setValues('Dist',Dist,'TargetPose',i,'LastDist',LastDist,...
                 'Height',h,'TCPSpeed',v*SF,'Time',time,'State',state);

@@ -185,7 +185,7 @@ classdef controller < handle %& kinectcore & ur10core
                 end
                 toc
             end
-            %close
+            close
             clc
             
         end

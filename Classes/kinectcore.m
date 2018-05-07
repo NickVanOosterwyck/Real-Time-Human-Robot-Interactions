@@ -169,19 +169,31 @@ classdef kinectcore < handle
         function [h] = getHandHeight(obj,varargin)
             p = inputParser;
             p.StructExpand = false;
+            acceptedMode = {'ptCloud','Skeleton'};
             acceptedSide = {'Left','Right'};
             acceptedOut = {'All','Max'};
             p.addRequired('obj');
+            p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
             p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedSide)));
             p.addOptional('Out','Right',@(x) any(validatestring(x,acceptedOut)));
-            p.addOptional('bodies',[]);
+            p.addOptional('dataIn',[]);
             p.parse(obj,varargin{:});
             
-            % get new bodies if no bodies is provided
-            if isempty(p.Results.bodies)
-                bodies = obj.getSkeleton();
-            else
-                bodies = p.Results.bodies;
+            % get data if necessary
+            if strcmp(p.Results.Mode,'ptCloud')
+                % get new pointcloud if no pointcloud is provided
+                if isempty(p.Results.dataIn)
+                    ptCloud = obj.getPointCloud('Filtered');
+                else
+                    ptCloud = p.Results.dataIn;
+                end
+            elseif strcmp(p.Results.Mode,'Skeleton')
+                % get new bodies if no bodies is provided
+                if isempty(p.Results.dataIn)
+                    bodies = obj.getSkeleton();
+                else
+                    bodies = p.Results.dataIn;
+                end
             end
             
             % set indice for right/left hand
@@ -192,20 +204,27 @@ classdef kinectcore < handle
             end
             
             % get height of hand
-            h=zeros(1,6);
-            if ~isempty(bodies)
-                numBodies=length(bodies);
-                for j=1:numBodies
-                    if bodies(j).TrackingState(i)==2
-                        h(j)=bodies(j).Position(3,i);
-                    else
-                        h=0;
-                    end
+            if strcmp(p.Results.Mode,'ptCloud')
+                if ptCloud.Count ~=0
+                    h = ptCloud.ZLimits(2);
+                else
+                    h=0;
                 end
-            else
-                h=0;
+            elseif strcmp(p.Results.Mode,'Skeleton')
+                h=zeros(1,6);
+                if ~isempty(bodies)
+                    numBodies=length(bodies);
+                    for j=1:numBodies
+                        if bodies(j).TrackingState(i)==2
+                            h(j)=bodies(j).Position(3,i);
+                        else
+                            h(j)=0;
+                        end
+                    end
+                else
+                    h=0;
+                end
             end
-            
             if strcmp(p.Results.Out,'Max')
                 h=max(h);
             end
