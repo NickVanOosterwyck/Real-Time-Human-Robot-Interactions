@@ -5,7 +5,7 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Connect
-CameraType = 'vrep';    % vrep or real
+CameraType = 'real';    % vrep or real
 RobotType = 'real';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);

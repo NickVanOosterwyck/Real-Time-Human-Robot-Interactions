@@ -150,16 +150,6 @@ classdef kinectcore < handle
             Result = HomoTransMat*XYZ;
             ptCloud = pointCloud(Result(1:3,:).');
         end
-
-%         function getPointCloudCalibration(obj)
-%             ptCloudRaw = obj.getPointCloud('Raw');
-%             figure('Name','PointCloud Calibration');
-%             obj.plotPointCloud(ptCloudRaw);
-%             hold on
-%             obj.drawRobotBase();
-%             obj.drawBox(obj.worktableVol);
-%             hold off
-%         end
         function [bodies,varargout]=getSkeleton(obj)
             [bodies]= obj.cam.getSkeleton();
             n=length(bodies);
@@ -196,9 +186,9 @@ classdef kinectcore < handle
             
             % set indice for right/left hand
             if strcmp(p.Results.Side,'Right')
-                i=11;
+                i=24;
             else
-                i=7;
+                i=22;
             end
             
             % get height of hand

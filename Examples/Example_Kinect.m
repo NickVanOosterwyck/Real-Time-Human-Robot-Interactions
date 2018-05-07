@@ -32,12 +32,8 @@ cam.plotPointCloud(ptCloud);
 %% Get comparison
 cam.getPointCloudComparison();
 
-%% Check calibration
-cam.getPointCloudCalibration();
-
 %% Show Player
-cam.showPlayer();
-cam.showTrackingPlayer(); %slower, but with live tracking
+cam.showTrackingPlayer();
 
 %% Move camera
 cam.moveToCameraLocation([-1.5 1.5 1 90 45 0]); % north-west

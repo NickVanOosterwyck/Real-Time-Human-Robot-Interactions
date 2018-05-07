@@ -6,7 +6,7 @@ classdef ur10vrep < handle
         vrep                    % object for communicating with VREP                [1x1 remApi]
         clientID;               % number of Matlab port (-1 if connection failed)   [1x1 double]
         JointHandles;           % handles of joints                                 [1x6 double]
-        MaxSpeedFactor     % limiting joint speed factor
+        MaxSpeedFactor          % limiting joint speed factor
         JointVelocities         % velocity of joint in rad/s
         
     end
@@ -57,7 +57,7 @@ classdef ur10vrep < handle
             if t == 0
                 t = max(deltaAng/v);
             end
-            obj.JointVelocities = max(deltaAng/t,0.01);
+            obj.JointVelocities = deltaAng/t;
             
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
             for i=1:6

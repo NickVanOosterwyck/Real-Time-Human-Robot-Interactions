@@ -185,7 +185,7 @@ classdef controller < handle %& kinectcore & ur10core
                 end
                 toc
             end
-            close
+            %close
             clc
             
         end
@@ -198,34 +198,38 @@ classdef controller < handle %& kinectcore & ur10core
             p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
             p.parse(obj,Mode,Reference);
             
-            
-            if strcmp(p.Results.Mode,'ptCloud')
-                obj.cam.createAxis('detVol'); hold on
-                ptCloud = obj.cam.getPointCloud('Filtered');
-                pcshow(ptCloud,'MarkerSize',8);
-                axis(obj.cam.detectionVol)
-                [dist,StartPoint,EndPoint] = obj.getClosestPoint('ptCloud',p.Results.Reference,ptCloud);
-            elseif strcmp(p.Results.Mode,'Skeleton')
-                obj.cam.createAxis('auto'); hold on
-                bodies = obj.cam.getSkeleton;
-                obj.cam.drawSkeleton(bodies);
-                [dist,StartPoint,EndPoint] = obj.getClosestPoint('Skeleton',p.Results.Reference,bodies);
-            end
-            
+            obj.cam.createAxis();
+            title('Tracking Player')
+            hold on
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
-            obj.rob.drawRobot();
-            title('Distance Calculation')
             
-            if ~isinf(dist)
-                plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],'r','LineWidth',2)
-                plot3(StartPoint(1),StartPoint(2),StartPoint(3),'r','Marker','o','LineWidth',2)
-                plot3(EndPoint(1),EndPoint(2),EndPoint(3),'r','Marker','o','LineWidth',2)
-                text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
-            else
-                text(0,0,1.3,'No point detected')
-            end
-            hold off
+            % draw data
+                if strcmp(p.Results.Mode,'ptCloud')
+                    ptCloud = obj.cam.getPointCloud('Filtered');
+                    pcshow(ptCloud,'MarkerSize',8)
+                    axis(obj.cam.detectionVol)
+                    [dist,StartPoint,EndPoint] = obj.getClosestPoint('ptCloud',p.Results.Reference,ptCloud);
+                elseif strcmp(p.Results.Mode,'Skeleton')
+                    bodies = obj.cam.getSkeleton;
+                    nSkel=obj.cam.drawSkeleton(bodies);
+                    axis([-2 3 -3 1.8 0 2])
+                    [dist,StartPoint,EndPoint] = obj.getClosestPoint('Skeleton',p.Results.Reference,bodies);
+                end
+                
+                % draw robot
+                obj.rob.drawRobot();
+                
+                
+                % draw line with closest distance
+                if ~isinf(dist)
+                    plot3([EndPoint(1) StartPoint(1)],[EndPoint(2) StartPoint(2)],[EndPoint(3) StartPoint(3)],...
+                        'k','LineStyle','--','Marker','o','LineWidth',1)
+                    text(0,0,1.3,[' ' num2str(round(dist,2)) ' m'])
+                else
+                    plot3([0 0],[0 0],[0 0])
+                    text(0,0,1.3,'No point detected')
+                end
             
         end
         

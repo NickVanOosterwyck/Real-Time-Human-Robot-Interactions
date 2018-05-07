@@ -6,7 +6,7 @@ clear; close all; clc
 
 %% Create & Connect
 CameraType = 'real';    % vrep or real
-RobotType = 'real';     % vrep or real
+RobotType = 'vrep';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
@@ -26,8 +26,9 @@ PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
 %-- set safety distances
-rStop = 1.5;
+rStop = 1;
 rSlow = 2;
+hStop = 1.8;
 
 
 %% Go home
@@ -40,10 +41,10 @@ iterations = 1;
 th_dist = 0.05;
 th_h = 0.1;
 Ref = 'TCP'; % choose TCP or Base
-Mode = 'ptCloud'; % choose Skeleton or ptCloud
-a=0.5; v=0.4; t=0; r=0;
+Mode = 'Skeleton'; % choose Skeleton or ptCloud
+a=0.5; v=0.2; t=0; r=0;
 
-SF=0; state=3; LastDist=Inf; LastH=Inf;
+SF=0; LastDist=Inf; LastH=Inf;
 dis = GUI('ControlPanel',true,'LiveGraphDist',true,'LiveGraphSpeed',true);
 dis.setValues('Reference',Ref);
 tic
@@ -74,7 +75,7 @@ for it = 1:iterations
                 LastH=h;
                 SF=0; ctrl.rob.setSpeedFactor(SF)
             elseif Dist>rStop && Dist<rSlow
-                SF = max((Dist-rStop)/(rSlow-rStop),0.1);
+                SF=(Dist-rStop)/(rSlow-rStop);
             elseif Dist>rSlow && h<hStop
                 SF=1;
             end
