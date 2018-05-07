@@ -175,7 +175,7 @@ classdef kinectcore < handle
             p.addRequired('obj');
             p.addRequired('Mode',@(x) any(validatestring(x,acceptedMode)));
             p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedSide)));
-            p.addOptional('Out','Right',@(x) any(validatestring(x,acceptedOut)));
+            p.addOptional('Out','Max',@(x) any(validatestring(x,acceptedOut)));
             p.addOptional('dataIn',[]);
             p.parse(obj,varargin{:});
             
@@ -228,6 +228,52 @@ classdef kinectcore < handle
             if strcmp(p.Results.Out,'Max')
                 h=max(h);
             end
+            
+        end
+        function [Position] = getHandPosition(obj,varargin)
+            p = inputParser;
+            p.StructExpand = false;
+            acceptedSide = {'Left','Right'};
+            acceptedCS = {'World','Robot'};
+            p.addRequired('obj');
+            p.addOptional('Side','Right',@(x) any(validatestring(x,acceptedSide)));
+            p.addOptional('CS','World',@(x) any(validatestring(x,acceptedCS)));
+            p.addOptional('dataIn',[]);
+            p.parse(obj,varargin{:});
+            
+            % get new bodies if no bodies is provided
+            if isempty(p.Results.dataIn)
+                bodies = obj.getSkeleton();
+            else
+                bodies = p.Results.dataIn;
+            end
+            
+            % set indice for right/left hand
+            if strcmp(p.Results.Side,'Right')
+                i=24;
+            else
+                i=22;
+            end
+            
+            Position=zeros(1,3);
+            if ~isempty(bodies)
+                if bodies(1).TrackingState(i)==2
+                    for k=1:3
+                        Position(k)=bodies(1).Position(k,i);
+                    end
+                else
+                    Position=[Inf Inf Inf];
+                end
+            else
+                Position=[Inf Inf Inf];
+            end
+            
+            % transform to robot coordinate system
+            if strcmp(p.Results.CS,'Robot')
+                Position = Position*1000;
+                Position(3)=Position(3)-860;
+            end
+            
             
         end
         function [varargout] = drawSkeleton(obj,varargin)
