@@ -76,6 +76,15 @@ classdef controller < handle %& kinectcore & ur10core
                     EndPoint = [inf,inf,inf];
                 end
             elseif strcmp(p.Results.Mode,'Skeleton')
+%                 if ~isempty(bodies)
+%                     ptCloud = pointCloud(bodies.Position');
+%                     [indices, dists] = findNearestNeighbors(ptCloud,StartPoint,1,'Sort',true);
+%                     Dist = dists(1);
+%                     EndPoint = ptCloud.Location(indices(1),:);
+%                 else
+%                     Dist = inf;
+%                     EndPoint = [inf,inf,inf];
+%                 end
                 if ~isempty(bodies)
                     numBodies=length(bodies);
                     distances = zeros(numBodies,25);
@@ -100,8 +109,8 @@ classdef controller < handle %& kinectcore & ur10core
                     pos=bodies(indb).Position;
                     EndPoint = [pos(1,indx) pos(2,indx) pos(3,indx)];
                 else
-                    Dist = inf;
-                    EndPoint = [inf,inf,inf];
+                    Dist = Inf;
+                    EndPoint = [Inf Inf Inf];
                 end
             end
         end

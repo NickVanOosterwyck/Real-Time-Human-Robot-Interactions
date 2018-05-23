@@ -5,7 +5,6 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 RobotType = 'vrep';     % vrep or real
 
 rob=ur10core(RobotType);
-rob.connect();
 
 %% InvKin
 JointPositions = [0 -80 -40 -180 -90 0];
@@ -60,4 +59,4 @@ H10 = inv(H01);
 H14 = H01\H04; % H14 = H10*H04
 ang(4) = -atan2d(-H14(2,3),H14(1,3))-270-ang(2)-ang(3);
 
-rob.moveToJointTargetPositions(ang(1:6),0.5);
+ang(1:6)
