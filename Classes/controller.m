@@ -198,7 +198,7 @@ classdef controller < handle %& kinectcore & ur10core
             clc
             
         end
-        function showDistanceCalculation(obj,Mode,Reference)
+        function [f,ax]=showDistanceCalculation(obj,Mode,Reference)
             p = inputParser;
             acceptedMode = {'ptCloud','Skeleton'};
             acceptedRef = {'Base','TCP'};
@@ -207,8 +207,7 @@ classdef controller < handle %& kinectcore & ur10core
             p.addRequired('Reference',@(x) any(validatestring(x,acceptedRef)));
             p.parse(obj,Mode,Reference);
             
-            obj.cam.createAxis();
-            title('Tracking Player')
+            [f,ax]=obj.cam.createAxis();
             hold on
             obj.cam.drawRobotBase();
             obj.cam.drawBox(obj.cam.worktableVol);
