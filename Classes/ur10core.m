@@ -78,6 +78,10 @@ classdef ur10core < handle
             JointPositions_rad=obj.rob.get_actual_joint_positions();
             JointPositions=JointPositions_rad/pi*180;
         end
+        function [JointSpeeds] = getJointSpeeds(obj)
+            JointSpeeds_rad=obj.rob.get_actual_joint_speeds();
+            JointSpeeds=JointSpeeds_rad/pi*180;
+        end
         function [TCPSpeed] = getTCPSpeed(obj)
             vec = obj.rob.get_actual_tcp_speed();
             TCPSpeed = round(sqrt(vec(1)^2+vec(2)^2+vec(3)^2),2);

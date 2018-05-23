@@ -8,7 +8,7 @@ classdef ur10vrep < handle
         JointHandles;           % handles of joints                                 [1x6 double]
         MaxSpeedFactor          % limiting joint speed factor
         JointVelocities         % velocity of joint in rad/s
-        
+        TCPHandle
     end
     
     methods
@@ -18,6 +18,7 @@ classdef ur10vrep < handle
             obj.JointHandles = zeros(1,6);
             obj.MaxSpeedFactor = 1;
             obj.JointVelocities = zeros(1,6);
+            obj.TCPHandle =0;
         end
         
         function connect(obj)
@@ -37,8 +38,10 @@ classdef ur10vrep < handle
             for i=1:6
                 [~,obj.JointHandles(i)]=obj.vrep.simxGetObjectHandle(obj.clientID,['UR10_joint',num2str(i)],obj.vrep.simx_opmode_blocking);
             end
+            [~,obj.TCPHandle] = obj.vrep.simxGetObjectHandle(obj.clientID,'TCP',obj.vrep.simx_opmode_blocking);
             % get jointpositions
             [~] = obj.get_actual_joint_positions();
+            [~] = obj.get_actual_tcp_speed();
         end
         function [JointPositions] = get_actual_joint_positions(obj)
             JointPositions=zeros(1,6);
@@ -48,8 +51,11 @@ classdef ur10vrep < handle
             end
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,0);
         end
-        function get_actual_tcp_speed(~)
-            error('get_actual_tcp_speed is not supported in VREP')
+        function get_actual_joint_speeds(~)
+            error('get_actual_joint_speeds is not supported in VREP')
+        end
+        function [Velocities] =get_actual_tcp_speed(obj)
+            [~,Velocities,~]=obj.vrep.simxGetObjectVelocity(obj.clientID,obj.TCPHandle,obj.vrep.simx_opmode_streaming);
         end
         function movej(obj,q,~,v,t,~)
             % a and r are ignored in vrep

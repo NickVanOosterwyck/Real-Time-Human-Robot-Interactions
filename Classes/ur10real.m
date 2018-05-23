@@ -31,6 +31,11 @@ classdef ur10real < handle
         function [JointPositions] = get_actual_joint_positions(obj)
             JointPositions = obj.jsub.LatestMessage.Position.';
         end
+        function [JointPositions] =  get_actual_joint_speeds(obj)
+            JointPositions = obj.jsub.LatestMessage.Velocity.';
+        end
+       
+        
         function [Velocities] = get_actual_tcp_speed(obj)
             % only lineair speed
             vx = obj.TCPsub.LatestMessage.Twist.Linear.X;
