@@ -17,7 +17,7 @@ classdef GUI < handle
         hReference
         hDist
         hLastDist
-        hTCPspeed
+        hSF
         hTargetPose
         hState
         hHeight
@@ -54,7 +54,7 @@ classdef GUI < handle
                 uicontrol('Style','text','Position',[xDes 260 wDes 20],...
                     'HorizontalAlignment','left','String','Last Distance:');
                 uicontrol('Style','text','Position',[xDes 240 wDes 20],...
-                    'HorizontalAlignment','left','String','TCPspeed:');
+                    'HorizontalAlignment','left','String','SF:');
                 uicontrol('Style','text','Position',[xDes 220 wDes 20],...
                     'HorizontalAlignment','left','String','TargetPose:');
                 uicontrol('Style','text','Position',[xDes 200 wDes 20],...
@@ -68,7 +68,7 @@ classdef GUI < handle
                     'HorizontalAlignment','left','String','');
                 obj.hLastDist =uicontrol('Style','text','Position',[xVal 260 wVal 20],...
                     'HorizontalAlignment','left','String','');
-                obj.hTCPspeed=uicontrol('Style','text','Position',[xVal 240 wVal 20],...
+                obj.hSF=uicontrol('Style','text','Position',[xVal 240 wVal 20],...
                     'HorizontalAlignment','left','String','');
                 obj.hTargetPose=uicontrol('Style','text','Position',[xVal 220 wVal 20],...
                     'HorizontalAlignment','left','String','');
@@ -81,8 +81,6 @@ classdef GUI < handle
                     'HorizontalAlignment','left','String','m');
                 uicontrol('Style','text','Position',[xUni 260 wUni 20],...
                     'HorizontalAlignment','left','String','m');
-                uicontrol('Style','text','Position',[xUni 240 wUni 20],...
-                    'HorizontalAlignment','left','String','m/s');
                 uicontrol('Style','text','Position',[xUni 180 wUni 20],...
                     'HorizontalAlignment','left','String','m');
                 % graph
@@ -96,6 +94,8 @@ classdef GUI < handle
                 obj.axD = subplot(2,3,[2 3]);
                 obj.pD=plot(obj.axD,obj.aTime,obj.aDist);
                 title('Distance'); grid on
+                xlabel('Time[s]')
+                ylabel('Distance [m]')
                 obj.axD.YLimMode= 'manual';
                 obj.axD.YLim= [0 2.5];
                 
@@ -104,9 +104,11 @@ classdef GUI < handle
             if p.Results.LiveGraphSpeed
                 obj.axS = subplot(2,3,[5 6]);
                 obj.pS=plot(obj.axS,obj.aTime,obj.aSpeed);
-                title('TCP Speed'); grid on
+                title('Speedfactor'); grid on
+                xlabel('Time[s]')
+                ylabel('Speedfactor []')
                 obj.axS.YLimMode= 'manual';
-                obj.axS.YLim= [0 0.5];
+                obj.axS.YLim= [0 1.1];
             end
         end
         function setValues(obj,varargin)
@@ -115,7 +117,7 @@ classdef GUI < handle
             p.addParameter('Reference','');
             p.addParameter('Dist','');
             p.addParameter('LastDist','');
-            p.addParameter('TCPspeed','');
+            p.addParameter('SF','');
             p.addParameter('TargetPose','');
             p.addParameter('State','');
             p.addParameter('Height','');
@@ -131,8 +133,8 @@ classdef GUI < handle
             if ~strcmp('',p.Results.LastDist)
                 obj.hLastDist.String = num2str(p.Results.LastDist);
             end
-            if ~strcmp('',p.Results.TCPspeed)
-                obj.hTCPspeed.String = num2str(p.Results.TCPspeed);
+            if ~strcmp('',p.Results.SF)
+                obj.hSF.String = num2str(p.Results.SF);
             end
             if ~strcmp('',p.Results.TargetPose)
                 obj.hTargetPose.String = num2str(p.Results.TargetPose);
@@ -162,8 +164,8 @@ classdef GUI < handle
                     obj.pD.YData = obj.aDist;
                     obj.axD.XLim= [max(obj.aTime(end)-obj.tDisp,0) max(obj.aTime(end),obj.tDisp)];
                 end
-                if ~strcmp('',p.Results.TCPspeed)
-                    obj.aSpeed(length(obj.aSpeed)+1)=p.Results.TCPspeed;
+                if ~strcmp('',p.Results.SF)
+                    obj.aSpeed(length(obj.aSpeed)+1)=p.Results.SF;
                     obj.pS.XData = obj.aTime;
                     obj.pS.YData = obj.aSpeed;
                     obj.axS.XLim= [max(obj.aTime(end)-obj.tDisp,0) max(obj.aTime(end),obj.tDisp)];

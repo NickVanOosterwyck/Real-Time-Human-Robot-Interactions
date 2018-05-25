@@ -5,8 +5,8 @@ addpath(genpath(pwd)); % make sure current directory is the top map!
 clear; close all; clc
 
 %% Create & Connect
-CameraType = 'real';    % vrep or real
-RobotType = 'real';     % vrep or real
+CameraType = 'vrep';    % vrep or real
+RobotType = 'vrep';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
@@ -34,7 +34,7 @@ rStop = 1;
 hStop = 1.8;
 
 %% Go home
-rob2.goHome();
+%rob2.goHome();
 ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
@@ -43,9 +43,9 @@ Range = 0.05;
 iterations = 1;
 th_dist = 0.1;
 th_h = 0.1;
-Ref = 'TCP'; % choose TCP or Base
-Mode = 'Skeleton'; % choose Skeleton or ptCloud
-a=0.5; v=0.2; t=0; r=0;
+Ref = 'Base'; % choose TCP or Base
+Mode = 'ptCloud'; % choose Skeleton or ptCloud
+a=10; v=0.2; t=0; r=0;
 
 SF=0; state=3; LastDist=Inf; LastH=Inf;
 dis = GUI('ControlPanel',true,'LiveGraphDist',true,'LiveGraphSpeed',true);
@@ -55,7 +55,7 @@ for it = 1:iterations
     i = 1;
     for i = 1:length(Path)
         ctrl.rob.movej(Path(i,:),a,v,t,r);
-        rob2.movej(Path(i,:),a,v,t,r);
+        %rob2.movej(Path(i,:),a,v,t,r);
         while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
              % get data
             if strcmp(Mode,'Skeleton')
@@ -80,10 +80,10 @@ for it = 1:iterations
             % send and plot speed
             time=toc;
             ctrl.rob.setSpeedFactor(SF);
-            rob2.setSpeedFactor(SF);
-            TCPSpeed = ctrl.rob.getTCPspeed();
+            %rob2.setSpeedFactor(SF);
+            TCPSpeed = ctrl.rob.getTCPSpeed();
             dis.setValues('Dist',Dist,'TargetPose',i,'LastDist',LastDist,...
-                'Height',h,'TCPSpeed',v*SF,'Time',time,'State',state);
+                'Height',h,'SF',SF,'Time',time,'State',state);
         end
     end
 end
