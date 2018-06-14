@@ -15,17 +15,17 @@ rob.goHome();
 rob.goHome(true); %return when robot is at pose
 
 %% Movej
-a=1.4; v=0.1; t=0; r=0;
+a=1.4; v=0.2; t=0; r=0;
 rob.movej([0 -90 -90 -180 -90 0],a,v,t,r);          % with joint angles
 rob.movej([500,-400,800,0,90,90],a,v,t,r,'World');  % in base coordinates
 rob.movej([0 -90 -90 -180 -90 0],a,v,5,r);          % with specified time
 
 %% Movel
 a=0.5; v=0.2; t=0; r=0;
-ctrl.rob.movel([500,-400,800,0,90,90],a,v,t,r,'World'); % not supported in vrep
+rob.movel([500,-400,800,0,90,90],a,v,t,r,'World'); % not supported in vrep
 
 %% Stopj
-rob.stopj(1.5);
+rob.stopj(10);
 
 %% Set speed
 rob.setSpeedFactor(1);

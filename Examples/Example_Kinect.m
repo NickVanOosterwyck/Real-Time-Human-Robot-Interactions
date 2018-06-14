@@ -5,23 +5,18 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & Connect
-CameraType = 'real';    % vrep or real
+CameraType = 'vrep';    % vrep or real
 
 cam=kinectcore(CameraType);
 cam.connect();
 
-%% set detectionVol
-cam.setdetecionVol([-2 1.5 -2 1.6 0 2.3]);
-
 %% Get Pointcloud
+[ptCloud] = cam.getPointCloud('Filtered'); % Raw/Desampled/Filtered
+
+%% Show Pointcloud
 [ptCloud] = cam.getPointCloud('Filtered');
-cam.plotPointCloud(ptCloud);
-
-%% Get comparison
-cam.getPointCloudComparison();
-
-%% Show Player
-cam.showTrackingPlayer();
+cam.createAxis();
+pcshow(ptCloud);
 
 %% Move camera
 cam.moveToCameraLocation([-1.5 1.5 1 90 45 0]); % north-west

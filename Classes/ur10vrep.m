@@ -63,7 +63,7 @@ classdef ur10vrep < handle
             if t == 0
                 t = max(deltaAng/v);
             end
-            obj.JointVelocities = deltaAng/t;
+            obj.JointVelocities = max(deltaAng/t,0.01);
             
             [~]=obj.vrep.simxPauseCommunication(obj.clientID,1);
             for i=1:6

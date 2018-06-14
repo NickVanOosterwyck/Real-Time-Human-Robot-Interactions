@@ -11,14 +11,7 @@ RobotType = 'vrep';     % vrep or real
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
-%% 2nd robot
-rob2=ur10core('vrep');
-rob2.connect();
-
-%% Set up
-%-- move camera
-%ctrl.cam.moveToCameraLocation([2.03 2.03 1.08 90 -45 0]); % north-east
-
+%% Path
 %-- set positions
 Home = ctrl.rob.homeJointTargetPositions;
 PickUp = [45 -110 -80 -170 -135 0];
@@ -29,61 +22,37 @@ PlaceApp = [-25 -113.2953  -44.7716 -201.9331 -25 0];
 %-- create path
 Path =[Home;PickUpApp;PickUp;PickUpApp;PlaceApp;Place;PlaceApp;Home];
 
-%-- set safety distances
-rStop = 1;
-hStop = 1.8;
-
 %% Go home
-%rob2.goHome();
 ctrl.rob.goHome(true);
 disp('Robot is ready in home pose.')
 
 %% Demo 1: Safety Rated Monitored Stop
-Range = 0.05;
+rStop = 1;
 iterations = 1;
-th_dist = 0.1;
-th_h = 0.1;
-Ref = 'Base'; % choose TCP or Base
 Mode = 'ptCloud'; % choose Skeleton or ptCloud
-a=10; v=0.2; t=0; r=0;
+a=5; v=0.2; t=0; r=0;
 
-SF=0; state=3; LastDist=Inf; LastH=Inf;
-dis = GUI('ControlPanel',true,'LiveGraphDist',true,'LiveGraphSpeed',true);
-dis.setValues('Reference',Ref);
-tic
 for it = 1:iterations
-    i = 1;
-    for i = 1:length(Path)
-        ctrl.rob.movej(Path(i,:),a,v,t,r);
-        %rob2.movej(Path(i,:),a,v,t,r);
-        while ~ctrl.rob.checkPoseReached(Path(i,:),Range)
-             % get data
+    for i = 1:size(Path,1)
+        flag = 0;
+        while ~ctrl.rob.checkPoseReached(Path(i,:),0.05)
             if strcmp(Mode,'Skeleton')
                 data=ctrl.cam.getSkeleton();
             elseif strcmp(Mode,'ptCloud')
                 data = ctrl.cam.getPointCloud('Filtered');
             end
-            h=ctrl.cam.getHandHeight(Mode,'Right','Max',data);
-            [Dist,~,~] = ctrl.getClosestPoint(Mode,Ref,data);
-            
-            % determine speed
-            if Dist<rStop && abs(LastDist-Dist)>th_dist
-                LastDist=Dist;
-                SF=0;
-            elseif h>hStop && abs(LastH-h)>th_h
-                LastH=h;
-                SF=0;
-            elseif Dist>rStop && h<hStop
-                SF=1;
+            [Dist,~,~] = ctrl.getClosestPoint(Mode,'TCP',data);
+             
+            if Dist<rStop
+                ctrl.rob.stopj(10);
+                flag=0;
+            elseif Dist>rStop
+                if flag == 0
+                    ctrl.rob.movej(Path(i,:),a,v,t,r);
+                    flag=1;
+                end
             end
             
-            % send and plot speed
-            time=toc;
-            ctrl.rob.setSpeedFactor(SF);
-            %rob2.setSpeedFactor(SF);
-            TCPSpeed = ctrl.rob.getTCPSpeed();
-            dis.setValues('Dist',Dist,'TargetPose',i,'LastDist',LastDist,...
-                'Height',h,'SF',SF,'Time',time,'State',state);
         end
     end
 end

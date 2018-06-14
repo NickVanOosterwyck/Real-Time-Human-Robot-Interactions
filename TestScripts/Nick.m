@@ -1,31 +1,20 @@
+%% Clear
+clear; close all; clc
+
+%% Add path
+addpath(genpath(pwd)); % make sure current directory is the top map!
+
 %% Create & connect
-CameraType = 'real';    % vrep or real
-RobotType = 'real';     % vrep or real
+CameraType = 'vrep';    % vrep or real
+RobotType = 'vrep';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
 
-%%
-pause(5)
-bodies=ctrl.cam.getSkeleton();
-h=ctrl.cam.getHandHeight('Left','Max',bodies)
+%% set up
+a=5; v=0.1; t=0; r=0;
+rob.movej([45 -110 -80 -170 -135 0],a,v,t,r);
 
-ctrl.cam.createAxis();
-hold on
-n=ctrl.cam.drawSkeleton(bodies);
-hold off
-
-%%
-pause(5)
-ctrl.showDistanceCalculation('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
-
-%%
-pause(5)
-h=ctrl.cam.getHandHeight('Right','Max')
-
-%%
-ctrl.showTrackingPlayer('Skeleton','TCP')
-
-%%
-ctrl.rob.goHome()
-ctrl.rob.setSpeedFactor(0);
+%% record
+rob.movej([45 -110 -80 -170 -135 0],a,v,t,r);
+ctrl.showTrackingPlayer('ptCloud','TCP'); % ptCloud/Skeleton and TCP/Base

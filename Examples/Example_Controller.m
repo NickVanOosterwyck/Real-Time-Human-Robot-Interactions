@@ -5,8 +5,8 @@ clear; close all; clc
 addpath(genpath(pwd)); % make sure current directory is the top map!
 
 %% Create & connect
-CameraType = 'real';    % vrep or real
-RobotType = 'real';     % vrep or real
+CameraType = 'vrep';    % vrep or real
+RobotType = 'vrep';     % vrep or real
 
 ctrl = controller(CameraType,RobotType);
 ctrl.connect();
@@ -15,7 +15,7 @@ ctrl.connect();
 ctrl.showDistanceCalculation('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
 
 %% Show Player
-ctrl.showTrackingPlayer('Skeleton','TCP'); % ptCloud/Skeleton and TCP/Base
+ctrl.showTrackingPlayer('ptCloud','TCP'); % ptCloud/Skeleton and TCP/Base
 
 %% Calculate closest distance
-[Dist,Start,End] = ctrl.getClosestPoint('Skeleton','Base');
+[Dist,Start,End] = ctrl.getClosestPoint('Skeleton','Base'); % ptCloud/Skeleton and TCP/Base
