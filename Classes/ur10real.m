@@ -30,6 +30,9 @@ classdef ur10real < handle
         end
         function [JointPositions] = get_actual_joint_positions(obj)
             JointPositions = obj.jsub.LatestMessage.Position.';
+            temp = JointPositions(1,1);
+            JointPositions(1,1) = JointPositions(1,3);
+            JointPositions(1,3) = temp;
         end
         function [JointPositions] =  get_actual_joint_speeds(obj)
             JointPositions = obj.jsub.LatestMessage.Velocity.';
