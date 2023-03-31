@@ -5,4 +5,4 @@ Repository for the code of my Master's Project "Real Time Human-Robot Interactio
 
 Thesis can be found on [ResearchGate](https://www.researchgate.net/publication/326717734_Real_Time_Human_Robot_Interactions_and_Speed_Control_of_a_Robotic_Arm_for_Collaborative_Operations)
 
-For more info contact nick.vanoosterwyck@student.uantwerpen.be
+For more info contact nick.vanoosterwyck@uantwerpen.be
